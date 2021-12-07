@@ -14,7 +14,7 @@ clc;
 downsampling_rate = 20.0;
 
 
-input_data_folder = './½º¶«Îå×é_PDS';
+input_data_folder = './Â½ÂºÂ¶Â«ÃŽÃ¥Ã—Ã©_PDS';
 output_data_folder = './Group5_PDS';
 
 if (~exist(output_data_folder, 'dir'))
@@ -26,7 +26,7 @@ stainfo = read_stainfo('STATIONS_JD.dat');
 
 
 period_path = [input_data_folder, '/'];
-period_folders_list = dir([period_path, '*ÒÇÆ÷*']);
+period_folders_list = dir([period_path, '*Ã’Ã‡Ã†Ã·*']);
 nperiod_folders_list = length(period_folders_list);
 
 for iperiod = 1:1:nperiod_folders_list
@@ -140,18 +140,6 @@ sacz = zeros(npts_segment, 1);
 % wfz = zeros(50,1);
 
 starttime = datetime();
-
-
-% station
-if (strcmp('4339', station))
-    station = '4239';
-    fprintf('Error: station is wrongle set in filename %s\n', filename);
-end
-if (strcmp('0802', station))
-    station = '4266';
-    fprintf('Error: station is wrongle set in filename %s\n', filename);
-end
-
 
 
 
