@@ -14,7 +14,7 @@ clc;
 downsampling_rate = 20.0;
 
 
-input_data_folder = './½º¶«Îå×é_PDS';
+input_data_folder = './DATA_RAW';
 output_data_folder = './Group5_PDS';
 
 if (~exist(output_data_folder, 'dir'))
