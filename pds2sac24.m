@@ -218,6 +218,8 @@ for k = 1:1:npackets
         endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                                                                           0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         endtime_segment.Second = endtime_segment.Second - dt;
+        %endtime_segment = starttime_segment + hours(1);
+        %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
     end
 
 
@@ -317,6 +319,8 @@ for k = 1:1:npackets
         endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                                                                           0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         endtime_segment.Second = endtime_segment.Second - dt;
+        %endtime_segment = starttime_segment + hours(1);
+        %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
         % cat waveform into sac arrays
         sacz(npts+1:npts+50) = wfz(1:50);
         sacn(npts+1:npts+50) = wfn(1:50);
@@ -404,6 +408,8 @@ for k = 1:1:npackets
                 % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
+                %endtime_segment = starttime_segment + hours(1);
+                %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
 
 
                 n = 50 - npts_part;
@@ -439,6 +445,8 @@ for k = 1:1:npackets
                 % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
+                %endtime_segment = starttime_segment + hours(1);
+                %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
 
 
                 % cat waveform into sac arrays
