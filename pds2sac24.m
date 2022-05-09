@@ -483,6 +483,7 @@ function nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, 
 % end of preprocessing
 
 
+% remove mean
 sacn_out = detrend(sacn_out, 'constant');
 sace_out = detrend(sace_out, 'constant');
 sacz_out = detrend(sacz_out, 'constant');
