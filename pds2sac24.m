@@ -194,8 +194,10 @@ for k = 1:1:npackets
     starttime_prev = starttime;
     starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
     % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
-    endtime = starttime;
-    endtime.Second = endtime.Second + 49*dt;
+    %endtime = starttime;
+    %endtime.Second = endtime.Second + 49*dt;
+    endtime = starttime + seconds(49*dt);
+
 
     is_continuous = true;
     if (k > 1)
@@ -206,20 +208,27 @@ for k = 1:1:npackets
     end
 
     if (0 == npts)
-        starttime_segment = starttime;
-        starttime_segment.Second = starttime_segment.Second + nskip*dt;
+        % starttime_segment = starttime;
+        % starttime_segment.Second = starttime_segment.Second + nskip*dt;
+
         % midtime_segment = starttime_segment;
         % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
         % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
         %                                                    0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         % endtime_segment.Second = endtime_segment.Second - dt;
-        midtime_segment = starttime_segment;
-        midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
-        endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
+
+        % midtime_segment = starttime_segment;
+        % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
+        % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                                                                           0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
-        endtime_segment.Second = endtime_segment.Second - dt;
+        % endtime_segment.Second = endtime_segment.Second - dt;
+ 
         %endtime_segment = starttime_segment + hours(1);
         %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
+
+        starttime_segment = starttime + seconds(nskip*dt);
+        endtime_segment = datetime(starttime_segment.Year, starttime_segment.Month, starttime_segment.Day, starttime_segment.Hour, ...
+                                                                          59, 60-0.5*dt, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
     end
 
 
@@ -307,20 +316,27 @@ for k = 1:1:npackets
 
         npts = 0;
         nskip = 0;
-        starttime_segment = starttime;
+
+        % starttime_segment = starttime;
         % midtime_segment = starttime_segment;
         % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
         % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
         %                                                   0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         % endtime_segment.Second = endtime_segment.Second - dt;
 
-        midtime_segment = starttime_segment;
-        midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
-        endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
-                                                                          0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
-        endtime_segment.Second = endtime_segment.Second - dt;
+        % midtime_segment = starttime_segment;
+        % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
+        % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
+        %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+        % endtime_segment.Second = endtime_segment.Second - dt;
+ 
         %endtime_segment = starttime_segment + hours(1);
         %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
+
+
+        starttime_segment = starttime;
+        endtime_segment = starttime_segment + seconds(Seconds_segment);
+
         % cat waveform into sac arrays
         sacz(npts+1:npts+50) = wfz(1:50);
         sacn(npts+1:npts+50) = wfn(1:50);
@@ -395,21 +411,30 @@ for k = 1:1:npackets
 
 
                 npts = 0;
-                starttime_segment = starttime;
+
+                % starttime_segment = starttime;
                 % starttime_segment.Second = starttime_segment.Second + (npts_part - 1 + nskip + 1)*dt;
-                starttime_segment.Second = starttime_segment.Second + (npts_part + nskip)*dt;
-                midtime_segment = starttime_segment;
-                midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
-                endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
-                                                                  0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
-                endtime_segment.Second = endtime_segment.Second - dt;
+                $ starttime_segment.Second = starttime_segment.Second + (npts_part + nskip)*dt;
+
+                % midtime_segment = starttime_segment;
+                % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
+                % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
+                %                                                   0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+                % endtime_segment.Second = endtime_segment.Second - dt;
+
                 % midtime_segment = starttime_segment;
                 % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
                 % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
+
                 %endtime_segment = starttime_segment + hours(1);
                 %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
+
+
+                starttime_segment = starttime + seconds((npts_part + nskip)*dt);
+                starttime_segment = starttime + seconds((npts_part - 1 + nskip + 1)*dt);
+                endtime_segment = starttime_segment + seconds(Seconds_segment);
 
 
                 n = 50 - npts_part;
@@ -433,21 +458,29 @@ for k = 1:1:npackets
 
 
                 npts = 0;
-                starttime_segment = starttime;
-                starttime_segment.Second = starttime_segment.Second + (nskip + 1)*dt;
-                midtime_segment = starttime_segment;
-                midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
-                endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
-                                                                  0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
-                endtime_segment.Second = endtime_segment.Second - dt;
+ 
+                % starttime_segment = starttime;
+                % starttime_segment.Second = starttime_segment.Second + (nskip + 1)*dt;
+ 
+                % midtime_segment = starttime_segment;
+                % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
+                % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
+                %                                                   0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+                % endtime_segment.Second = endtime_segment.Second - dt;
+    
                 % midtime_segment = starttime_segment;
                 % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
                 % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
+     
                 %endtime_segment = starttime_segment + hours(1);
                 %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
 
+
+                starttime_segment = starttime + seconds((nskip+1)*dt);
+                endtime_segment = starttime_segment + seconds(Seconds_segment);
+ 
 
                 % cat waveform into sac arrays
                 sacz(npts+1:npts+50) = wfz(1:50);
