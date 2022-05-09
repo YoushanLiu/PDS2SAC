@@ -128,6 +128,7 @@ offset = 2^24;
 
 
 Seconds_segment = 3600;
+Seconds_packet = 49*dt;
 Seconds_half_segment = 0.5*Seconds_segment;
 npts_segment = nearest(Seconds_segment/dt);
 
@@ -196,7 +197,7 @@ for k = 1:1:npackets
     % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
     %endtime = starttime;
     %endtime.Second = endtime.Second + 49*dt;
-    endtime = starttime + seconds(49*dt);
+    endtime = starttime + seconds(Seconds_packet);
 
 
     is_continuous = true;
