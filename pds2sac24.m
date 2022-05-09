@@ -336,7 +336,7 @@ for k = 1:1:npackets
 
 
         starttime_segment = starttime;
-        endtime_segment = starttime_segment + seconds(Seconds_segment);
+        endtime_segment = starttime_segment + seconds(Seconds_segment - dt);
 
         % cat waveform into sac arrays
         sacz(npts+1:npts+50) = wfz(1:50);
@@ -434,8 +434,8 @@ for k = 1:1:npackets
 
 
                 starttime_segment = starttime + seconds((npts_part + nskip)*dt);
-                starttime_segment = starttime + seconds((npts_part - 1 + nskip + 1)*dt);
-                endtime_segment = starttime_segment + seconds(Seconds_segment);
+                %starttime_segment = starttime + seconds((npts_part - 1 + nskip + 1)*dt);
+                endtime_segment = starttime_segment + seconds(Seconds_segment - dt);
 
 
                 n = 50 - npts_part;
@@ -480,7 +480,7 @@ for k = 1:1:npackets
 
 
                 starttime_segment = starttime + seconds((nskip+1)*dt);
-                endtime_segment = starttime_segment + seconds(Seconds_segment);
+                endtime_segment = starttime_segment + seconds(Seconds_segment - dt);
  
 
                 % cat waveform into sac arrays
