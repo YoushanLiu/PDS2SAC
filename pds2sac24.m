@@ -219,7 +219,7 @@ for k = 1:1:npackets
                                                                           0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         endtime_segment.Second = endtime_segment.Second - dt;
         %endtime_segment = starttime_segment + hours(1);
-        %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
+        %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
     end
 
 
@@ -320,7 +320,7 @@ for k = 1:1:npackets
                                                                           0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         endtime_segment.Second = endtime_segment.Second - dt;
         %endtime_segment = starttime_segment + hours(1);
-        %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
+        %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
         % cat waveform into sac arrays
         sacz(npts+1:npts+50) = wfz(1:50);
         sacn(npts+1:npts+50) = wfn(1:50);
@@ -409,7 +409,7 @@ for k = 1:1:npackets
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
                 %endtime_segment = starttime_segment + hours(1);
-                %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
+                %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
 
 
                 n = 50 - npts_part;
@@ -446,7 +446,7 @@ for k = 1:1:npackets
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
                 %endtime_segment = starttime_segment + hours(1);
-                %endtime_segment.Minute = 59; endtime_segment.Second = 59 + (1. - dt);
+                %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
 
 
                 % cat waveform into sac arrays
@@ -533,15 +533,18 @@ fprintf('%s is done ... \n', [datestr, '.', timestr, '.', network, '.', station,
 
 function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, dt, npts, nskip, downsampling_rate)
 
-% downsampling
-[b, a] = butter(2, 2*dt*0.49*downsampling_rate, 'low');
-if (npts > 6)
-    sacz = filtfilt(b, a, sacz(1:npts));
-    sacn = filtfilt(b, a, sacn(1:npts));
-    sace = filtfilt(b, a, sace(1:npts));
-end
-clear a b;
+
 decimate_rate = fix(sampling_rate/downsampling_rate);
+if (1 ~= decimate_rate)
+    % downsampling
+    if (npts > 12)
+        [b, a] = butter(2, 2*dt*0.49*downsampling_rate, 'low');
+        sacz = filtfilt(b, a, sacz(1:npts));
+        sacn = filtfilt(b, a, sacn(1:npts));
+        sace = filtfilt(b, a, sace(1:npts));
+        clear a b;
+    end
+end
 sacz_out = sacz(nskip+1:decimate_rate:npts);
 sacn_out = sacn(nskip+1:decimate_rate:npts);
 sace_out = sace(nskip+1:decimate_rate:npts);
