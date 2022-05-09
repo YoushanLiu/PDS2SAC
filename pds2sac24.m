@@ -483,6 +483,29 @@ function nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, 
 % end of preprocessing
 
 
+sacn_out = detrend(sacn_out, 'constant');
+sace_out = detrend(sace_out, 'constant');
+sacz_out = detrend(sacz_out, 'constant');
+% remove detrend
+sacn_out = detrend(sacn_out, 'linear');
+sace_out = detrend(sace_out, 'linear');
+sacz_out = detrend(sacz_out, 'linear');
+
+
+%sacn_out = sacn_out - mean(sacn_out);
+%%if (npts_out > 6)
+%sacn_out = detrend(sacn_out);
+%%end
+%sace_out = sace_out - mean(sace_out);
+%%if (npts_out > 6)
+%sace_out = detrend(sace_out);
+%%end
+%sacz_out = sacz_out - mean(sacz_out);
+%%if (npts_out > 6)
+%sacz_out = detrend(sacz_out);
+%%end
+
+
 % create output path
 datestr = sprintf('%4.4d%3.3d', starttime_segment.Year, day(starttime_segment, 'dayofyear'));
 station_daily_path = [output_data_folder, '/', station, '/', datestr, '/'];
@@ -499,30 +522,18 @@ timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', starttime_segment.Hour, starttime_s
 % output sac file
 outfile = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..', 'BHN.SAC'];
 SAC = initi_sacheader(outfile, starttime_segment, stla, stlo, stel, network, station, npts_out, dt_out, 'N');
-sacn_out = sacn_out - mean(sacn_out);
-if (npts_out > 6)
-    sacn_out = detrend(sacn_out);
-end
 SAC.DATA1 = sacn_out;
 writesac(SAC);
 clear SAC;
 
 outfile = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..', 'BHE.SAC'];
 SAC = initi_sacheader(outfile, starttime_segment, stla, stlo, stel, network, station, npts_out, dt_out, 'E');
-sace_out = sace_out - mean(sace_out);
-if (npts_out > 6)
-    sace_out = detrend(sace_out);
-end
 SAC.DATA1 = sace_out;
 writesac(SAC);
 clear SAC;
 
 outfile = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..', 'BHZ.SAC'];
 SAC = initi_sacheader(outfile, starttime_segment, stla, stlo, stel, network, station, npts_out, dt_out, 'Z');
-sacz_out = sacz_out - mean(sacz_out);
-if (npts_out > 6)
-    sacz_out = detrend(sacz_out);
-end
 SAC.DATA1 = sacz_out;
 writesac(SAC);
 clear SAC;
@@ -535,15 +546,13 @@ function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(
 
 
 decimate_rate = fix(sampling_rate/downsampling_rate);
-if (1 ~= decimate_rate)
+if ((1 ~= decimate_rate) && (npts > 12))
     % downsampling
-    if (npts > 12)
-        [b, a] = butter(2, 2*dt*0.49*downsampling_rate, 'low');
-        sacz = filtfilt(b, a, sacz(1:npts));
-        sacn = filtfilt(b, a, sacn(1:npts));
-        sace = filtfilt(b, a, sace(1:npts));
-        clear a b;
-    end
+    [b, a] = butter(2, 2*dt*0.49*downsampling_rate, 'low');
+    sacz = filtfilt(b, a, sacz(1:npts));
+    sacn = filtfilt(b, a, sacn(1:npts));
+    sace = filtfilt(b, a, sace(1:npts));
+    clear a b;
 end
 sacz_out = sacz(nskip+1:decimate_rate:npts);
 sacn_out = sacn(nskip+1:decimate_rate:npts);
