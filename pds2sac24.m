@@ -585,6 +585,7 @@ SAC.DATA1 = sacz_out;
 writesac(SAC);
 clear SAC;
 
+
 fprintf('%s is done ... \n', [datestr, '.', timestr, '.', network, '.', station, '..', 'BH*.SAC']);
 
 
@@ -653,7 +654,7 @@ sta = cell2struct(sta, stafields, 1);
 
 
 
-function SAC = initi_sacheader(outfile, starttime, julday, nzmsec, stla, stlo, stel, network, station, npts, dt, CMP)
+function SAC = initi_sacheader(outfile, starttime, julday, nzmsec, stla, stlo, stel, network, station, npts, dt, cmp)
 
 SAC = sacstruct(1);
 SAC.FILENAME = outfile;
@@ -686,16 +687,16 @@ SAC.IZTYPE = 'IB';
 SAC.LEVEN = 1;
 SAC.KSTNM = station;
 SAC.KNETWK = network;
-cmp = CMP(end:end);
-if (('Z' == cmp) || ('z' == cmp))         % Z
+CMP = cmp(end:end);
+if (('Z' == CMP) || ('z' == CMP))         % Z
     SAC.CMPAZ  = 0.0;
     SAC.CMPINC = 0.0;
     SAC.KCMPNM = 'BHZ';
-elseif (('N' == cmp) || ('n' == cmp))     % N
+elseif (('N' == CMP) || ('n' == CMP))     % N
     SAC.CMPAZ  = 0.0;
     SAC.CMPINC = 90.0;
     SAC.KCMPNM = 'BHN';
-elseif (('E' == cmp) || ('e' == cmp))     % E
+elseif (('E' == CMP) || ('e' == CMP))     % E
     SAC.CMPAZ  = 90.0;
     SAC.CMPINC = 90.0;
     SAC.KCMPNM = 'BHE';
