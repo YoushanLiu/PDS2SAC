@@ -127,6 +127,7 @@ fseek(fidin, 512, 0);
 offset = 2^24;
 
 
+half_dt = 0.5*dt;
 Seconds_segment = 3600;
 Seconds_packet = 49*dt;
 Seconds_half_segment = 0.5*Seconds_segment;
@@ -337,7 +338,7 @@ for k = 1:1:npackets
 
 
         starttime_segment = starttime;
-        endtime_segment = starttime_segment + seconds(Seconds_segment - 0.5*dt);
+        endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
 
         % cat waveform into sac arrays
         sacz(npts+1:npts+50) = wfz(1:50);
@@ -436,7 +437,7 @@ for k = 1:1:npackets
 
                 starttime_segment = starttime + seconds((npts_part + nskip)*dt);
                 %starttime_segment = starttime + seconds((npts_part - 1 + nskip + 1)*dt);
-                endtime_segment = starttime_segment + seconds(Seconds_segment - 0.5*dt);
+                endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
 
 
                 n = 50 - npts_part;
@@ -481,7 +482,7 @@ for k = 1:1:npackets
 
 
                 starttime_segment = starttime + seconds((nskip+1)*dt);
-                endtime_segment = starttime_segment + seconds(Seconds_segment - 0.5*dt);
+                endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
  
 
                 % cat waveform into sac arrays
