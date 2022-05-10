@@ -581,7 +581,7 @@ function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(
 
 
 decimate_rate = fix(sampling_rate/downsampling_rate);
-if ((1 ~= decimate_rate) && (npts > 12))
+if ((1 ~= decimate_rate) && (npts > 6))
     % downsampling
     [b, a] = butter(2, 2*dt*0.49*downsampling_rate, 'low');
     sacz = filtfilt(b, a, sacz(1:npts));
