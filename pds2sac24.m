@@ -499,6 +499,7 @@ for k = 1:1:npackets
 end
 
 
+clear b a;
 clear packet;
 clear wfn wfe wfz;
 clear sacn sace sacz;
@@ -543,34 +544,37 @@ sacz_out = detrend(sacz_out, 'linear');
 %%end
 
 
+julday = day(starttime_segment, 'dayofyear');
 % create output path
-datestr = sprintf('%4.4d%3.3d', starttime_segment.Year, day(starttime_segment, 'dayofyear'));
+datestr = sprintf('%4.4d%3.3d', starttime_segment.Year, julday);
 station_daily_path = [output_data_folder, '/', station, '/', datestr, '/'];
 if (~exist(station_daily_path, 'dir'))
     mkdir(station_daily_path);
 end
 
 
-datestr = sprintf('%4.4d.%3.3d', starttime_segment.Year, day(starttime_segment, 'dayofyear'));
+nzmsec = round((starttime_segment.Second - fix(starttime_segment.Second))*1000);
+datestr = sprintf('%4.4d.%3.3d', starttime_segment.Year, julday);
 timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', starttime_segment.Hour, starttime_segment.Minute, ...
-    fix(starttime_segment.Second), round((starttime_segment.Second - fix(starttime_segment.Second))*1000));
+                                                       fix(starttime_segment.Second), nzmsec);
 
 
+prefix = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..'];
 % output sac file
-outfile = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..', 'BHN.SAC'];
-SAC = initi_sacheader(outfile, starttime_segment, stla, stlo, stel, network, station, npts_out, dt_out, 'N');
+outfile = [prefix, 'BHN.SAC'];
+SAC = initi_sacheader(outfile, starttime_segment, julday, nzmsec, stla, stlo, stel, network, station, npts_out, dt_out, 'N');
 SAC.DATA1 = sacn_out;
 writesac(SAC);
 clear SAC;
 
-outfile = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..', 'BHE.SAC'];
-SAC = initi_sacheader(outfile, starttime_segment, stla, stlo, stel, network, station, npts_out, dt_out, 'E');
+outfile = [prefix, 'BHE.SAC'];
+SAC = initi_sacheader(outfile, starttime_segment, julday, nzmsec, stla, stlo, stel, network, station, npts_out, dt_out, 'E');
 SAC.DATA1 = sace_out;
 writesac(SAC);
 clear SAC;
 
-outfile = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..', 'BHZ.SAC'];
-SAC = initi_sacheader(outfile, starttime_segment, stla, stlo, stel, network, station, npts_out, dt_out, 'Z');
+outfile = [prefix, 'BHZ.SAC'];
+SAC = initi_sacheader(outfile, starttime_segment, julday, nzmsec, stla, stlo, stel, network, station, npts_out, dt_out, 'Z');
 SAC.DATA1 = sacz_out;
 writesac(SAC);
 clear SAC;
@@ -590,13 +594,15 @@ if ((1 ~= decimate_rate) && (npts > 6))
     sacn = filtfilt(b, a, sacn(1:npts));
     sace = filtfilt(b, a, sace(1:npts));
 end
-sacz_out = sacz(nskip+1:decimate_rate:npts);
-sacn_out = sacn(nskip+1:decimate_rate:npts);
-sace_out = sace(nskip+1:decimate_rate:npts);
+indx = (nskip+1:decimate_rate:npts);
+sacz_out = sacz(indx);
+sacn_out = sacn(indx);
+sace_out = sace(indx);
 
-npts_out = length(sacz_out);
+npts_out = length(indx);
 dt_out = decimate_rate*dt;
 
+clear indx;
 
 
 nskip = nskip + decimate_rate*npts_out - npts;
@@ -641,7 +647,7 @@ sta = cell2struct(sta, stafields, 1);
 
 
 
-function SAC = initi_sacheader(outfile, starttime, stla, stlo, stel, network, station, npts, dt, CMP)
+function SAC = initi_sacheader(outfile, starttime, julday, nzmsec, stla, stlo, stel, network, station, npts, dt, CMP)
 
 SAC = sacstruct(1);
 SAC.FILENAME = outfile;
@@ -652,11 +658,13 @@ SAC.B = 0.0;
 SAC.O = 0.0;
 SAC.E = (npts-1)*dt;
 SAC.NZYEAR = starttime.Year;
-SAC.NZJDAY = day(starttime, 'dayofyear');
+%SAC.NZJDAY = day(starttime, 'dayofyear');
+SAC.NZJDAY = julday;
 SAC.NZHOUR = starttime.Hour;
 SAC.NZMIN = starttime.Minute;
 SAC.NZSEC = fix(starttime.Second);
-SAC.NZMSEC = round((starttime.Second - fix(starttime.Second))*1000);
+%SAC.NZMSEC = round((starttime.Second - fix(starttime.Second))*1000);
+SAC.NZMSEC = nzmsec;
 SAC.NVHDR = 6;
 SAC.STLA = stla;
 SAC.STLO = stlo;
