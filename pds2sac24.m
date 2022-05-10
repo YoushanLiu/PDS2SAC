@@ -561,20 +561,26 @@ timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', starttime_segment.Hour, starttime_s
 
 prefix = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..'];
 % output sac file
-outfile = [prefix, 'BHN.SAC'];
-SAC = initi_sacheader(outfile, starttime_segment, julday, nzmsec, stla, stlo, stel, network, station, npts_out, dt_out, 'N');
+%outfile = [prefix, 'BHN.SAC'];
+cmp = 'BHN';
+SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzmsec, ...
+                    stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sacn_out;
 writesac(SAC);
 clear SAC;
 
-outfile = [prefix, 'BHE.SAC'];
-SAC = initi_sacheader(outfile, starttime_segment, julday, nzmsec, stla, stlo, stel, network, station, npts_out, dt_out, 'E');
+%outfile = [prefix, 'BHE.SAC'];
+cmp = 'BHE';
+SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzmsec, ...
+                    stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sace_out;
 writesac(SAC);
 clear SAC;
 
-outfile = [prefix, 'BHZ.SAC'];
-SAC = initi_sacheader(outfile, starttime_segment, julday, nzmsec, stla, stlo, stel, network, station, npts_out, dt_out, 'Z');
+%outfile = [prefix, 'BHZ.SAC'];
+cmp = 'BHZ';
+SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzmsec, ...
+                    stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sacz_out;
 writesac(SAC);
 clear SAC;
@@ -680,15 +686,16 @@ SAC.IZTYPE = 'IB';
 SAC.LEVEN = 1;
 SAC.KSTNM = station;
 SAC.KNETWK = network;
-if (('Z' == CMP) || ('z' == CMP))         % Z
+cmp = CMP(end:end);
+if (('Z' == cmp) || ('z' == cmp))         % Z
     SAC.CMPAZ  = 0.0;
     SAC.CMPINC = 0.0;
     SAC.KCMPNM = 'BHZ';
-elseif (('N' == CMP) || ('n' == CMP))     % N
+elseif (('N' == cmp) || ('n' == cmp))     % N
     SAC.CMPAZ  = 0.0;
     SAC.CMPINC = 90.0;
     SAC.KCMPNM = 'BHN';
-elseif (('E' == CMP) || ('e' == CMP))     % E
+elseif (('E' == cmp) || ('e' == cmp))     % E
     SAC.CMPAZ  = 90.0;
     SAC.CMPINC = 90.0;
     SAC.KCMPNM = 'BHE';
