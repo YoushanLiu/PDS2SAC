@@ -132,6 +132,7 @@ Seconds_packet = 49*dt;
 Seconds_half_segment = 0.5*Seconds_segment;
 npts_segment = nearest(Seconds_segment/dt);
 
+[b, a] = butter(2, 2*dt*0.499*downsampling_rate, 'low');
 sacn = zeros(npts_segment, 1);
 sace = zeros(npts_segment, 1);
 sacz = zeros(npts_segment, 1);
@@ -312,8 +313,8 @@ for k = 1:1:npackets
     if (~is_continuous)
         % write into a new file because of discontinuous clock
         % write sac file
-        save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, ...
-              starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+        save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
+                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
 
         npts = 0;
         nskip = 0;
@@ -367,8 +368,8 @@ for k = 1:1:npackets
             if (npackets == k)
                 % To the end of the file, save the last segment into files
                 % write sac files
-                save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, ...
-                      starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
+                            starttime_segment, stla, stlo, stel, network, station, output_data_folder);
                 break;
             end
         else
@@ -405,8 +406,8 @@ for k = 1:1:npackets
 
 
                 % write sac files
-                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, ...
-                              starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
+                                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
 
 
 
@@ -415,7 +416,7 @@ for k = 1:1:npackets
 
                 % starttime_segment = starttime;
                 % starttime_segment.Second = starttime_segment.Second + (npts_part - 1 + nskip + 1)*dt;
-                $ starttime_segment.Second = starttime_segment.Second + (npts_part + nskip)*dt;
+                % starttime_segment.Second = starttime_segment.Second + (npts_part + nskip)*dt;
 
                 % midtime_segment = starttime_segment;
                 % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
@@ -454,8 +455,8 @@ for k = 1:1:npackets
                 %                                            starttime  endtime
                 %
                 % write sac files
-                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, ...
-                              starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
+                                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
 
 
                 npts = 0;
@@ -507,13 +508,14 @@ fclose(fidin);
 
 
 
-function nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, ...
-                        starttime_segment, stla, stlo, stel, network, station, output_data_folder)
+function nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
+                              starttime_segment, stla, stlo, stel, network, station, output_data_folder)
 
 
 % preprocessing
 % downsampling
-[sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, dt, npts, nskip, downsampling_rate);
+[sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, ...
+                                                             dt, npts, nskip, downsampling_rate, b, a);
 % end of preprocessing
 
 
@@ -577,17 +579,16 @@ fprintf('%s is done ... \n', [datestr, '.', timestr, '.', network, '.', station,
 
 
 
-function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, dt, npts, nskip, downsampling_rate)
+function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, ...
+                                                                       dt, npts, nskip, downsampling_rate, b, a)
 
 
 decimate_rate = fix(sampling_rate/downsampling_rate);
 if ((1 ~= decimate_rate) && (npts > 6))
     % downsampling
-    [b, a] = butter(2, 2*dt*0.49*downsampling_rate, 'low');
     sacz = filtfilt(b, a, sacz(1:npts));
     sacn = filtfilt(b, a, sacn(1:npts));
     sace = filtfilt(b, a, sace(1:npts));
-    clear a b;
 end
 sacz_out = sacz(nskip+1:decimate_rate:npts);
 sacn_out = sacn(nskip+1:decimate_rate:npts);
