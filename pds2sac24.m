@@ -338,7 +338,9 @@ for k = 1:1:npackets
 
 
         starttime_segment = starttime;
-        endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
+        %endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
+        endtime_segment = datetime(starttime_segment.Year, starttime_segment.Month, starttime_segment.Day, starttime_segment.Hour, ...
+                                                                            59, 59, 999, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
 
         % cat waveform into sac arrays
         sacz(npts+1:npts+50) = wfz(1:50);
@@ -367,7 +369,7 @@ for k = 1:1:npackets
             sace(npts+1:npts+50) = wfe(1:50);
             npts = npts + 50;
             if (npackets == k)
-                % To the end of the file, save the last segment into files
+                % At the end of the file, save the last segment into files
                 % write sac files
                 save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
                             starttime_segment, stla, stlo, stel, network, station, output_data_folder);
