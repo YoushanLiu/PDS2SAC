@@ -86,9 +86,31 @@ packet = fread(fidin, 512, 'uchar');
 % pdshead.sampling_rate = 100*2^packet(47);
 % pdshead.delta = 1.0 / pdshead.sampling_rate;
 station = strcat(packet(40:-1:37).');
-sampling_rate = 100*2^packet(47);
+sps_type = packet(47);
+sampling_rate = 100*2^sps_type;
 dt = 1.0 / sampling_rate;
 gain_inv = 1.0 / (2^packet(45));
+filter_type = packet(43);
+filter_delay = 0;
+if (1 == filter_type)     % linear phase filter
+    if (0 == sps_type)
+        filter_delay = 0.240;
+    elseif(1 == sps_type)
+        filter_delay = 0.120;
+    elseif(2 == sps_type)
+        filter_delay = 0.060;
+    end
+elseif (2 == filter_type) % minimum phase filter
+    if (0 == sps_type)
+        filter_delay = 0.460;
+    elseif(1 == sps_type)
+        filter_delay = 0.230;
+    elseif(2 == sps_type)
+        filter_delay = 0.115;
+    end
+end
+
+
 
 
 % read first clock block
@@ -103,6 +125,7 @@ fseek(fidin, 512, 0);
 % ptr_clock1 = clock_block1(1,64);
 
 
+
 % read second clock block
 fseek(fidin, 512, 0);
 % clock_block2 = fread(fidin, 512, 'uchar');
@@ -115,6 +138,9 @@ fseek(fidin, 512, 0);
 % ptr_clock2 = clock_block2(1,64);
 
 
+
+
+
 % stafields = {'starttime'; 'stla'; 'stlo'; 'stel'; 'num_gps'; ...
 %              'gps_status'; 'gps_lock_num'; 'gps_lock_time'};
 % stahead = cell(size(stafields,1), npackets);
@@ -122,6 +148,9 @@ fseek(fidin, 512, 0);
 % stahead(2:7,:) = {nan};
 % stahead(8,:) = {' '};
 % stahead = cell2struct(stahead, stafields, 1);
+
+
+
 
 
 offset = 2^24;
@@ -195,7 +224,7 @@ for k = 1:1:npackets
 
 
     starttime_prev = starttime;
-    starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+    starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS') + seconds(filter_delay);
     % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
     %endtime = starttime;
     %endtime.Second = endtime.Second + 49*dt;
