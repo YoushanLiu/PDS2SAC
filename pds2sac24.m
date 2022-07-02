@@ -36,7 +36,8 @@ for iperiod = 1:1:nperiod_folders_list
     station_folders_list = dir([station_path, '20*']);
     nstation_folders_list = length(station_folders_list);
 
-    for istation = 1:1:nstation_folders_list
+    parfor istation = 1:1:nstation_folders_list
+    %for istation = 1:1:nstation_folders_list
 
 %         istation
         daily_path = [station_path, station_folders_list(istation).name, '/'];
@@ -44,7 +45,8 @@ for iperiod = 1:1:nperiod_folders_list
         daily_files_list = dir([daily_path, '*_*']);
         nfiles = length(daily_files_list);
 
-        parfor ifile = 1:nfiles
+        for ifile = 1:nfiles
+        %parfor ifile = 1:nfiles
 
             filename = [daily_path, daily_files_list(ifile).name];
 
