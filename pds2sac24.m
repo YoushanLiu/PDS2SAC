@@ -155,6 +155,13 @@ fseek(fidin, 512, 0);
 
 
 
+% minimum GPS stars
+% if the number of GPS stars less than it, I consider its GPS is unlocked.
+nGPS_min = 4;
+
+
+
+
 offset = 2^24;
 
 
@@ -163,6 +170,8 @@ Seconds_segment = 3600;
 Seconds_packet = 49*dt;
 Seconds_half_segment = 0.5*Seconds_segment;
 npts_segment = nearest(Seconds_segment/dt);
+
+
 
 [b, a] = butter(2, 2*dt*0.499*downsampling_rate, 'low');
 sacn = zeros(npts_segment, 1);
@@ -233,6 +242,23 @@ for k = 1:1:npackets
     endtime = starttime + seconds(Seconds_packet);
 
 
+
+
+    % if the number of GPS in current packet is less than the nGPS_min
+    % (i.e. 4), I consider this packet is GPS unlocked. Then I discard it.
+    if (packet(10,33) < nGPS_min)
+        % write into a new file because of discontinuous clock
+        % write sac file
+        save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
+                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+
+        npts = 0;
+        nskip = 0;
+        continue;
+    end
+
+
+
     is_continuous = true;
     if (k > 1)
         % if (abs(etime(datevec(starttime), datevec(starttime_prev))) > 50.00001*dt)
@@ -240,6 +266,7 @@ for k = 1:1:npackets
             is_continuous = false;
         end
     end
+
 
     if (0 == npts)
         % starttime_segment = starttime;
@@ -266,6 +293,7 @@ for k = 1:1:npackets
     end
 
 
+    % get extra header information
     % latitude
     % stla_key = char(packet(10,9));
     % stla = (str2double(char(packet(10,10)))*10 + str2double(char(packet(10,11)))) + ...
