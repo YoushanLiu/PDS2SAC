@@ -282,7 +282,7 @@ for k = 1:1:npackets
         % midtime_segment = starttime_segment;
         % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
         % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
-                                                                            0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+        %                                                                    0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         % endtime_segment.Second = endtime_segment.Second - dt;
  
         %endtime_segment = starttime_segment + hours(1);
