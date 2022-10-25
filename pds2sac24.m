@@ -365,9 +365,10 @@ for k = 1:1:npackets
     wfz(indx) = wfz(indx) - offset;
     
     % minus is introduced by the south-positive
-    wfn = -wfn*gain_inv;
-    wfe = +wfe*gain_inv;
-    wfz = +wfz*gain_inv;
+	wfn = -wfn;
+    %wfn = -wfn*gain_inv;
+    %wfe = +wfe*gain_inv;
+    %wfz = +wfz*gain_inv;
 
 
 
