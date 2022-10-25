@@ -96,19 +96,19 @@ filter_type = packet(43);
 filter_delay = 0;
 if (1 == filter_type)     % linear phase filter
     if (0 == sps_type)
-        filter_delay = 0.240;
+        filter_delay = 0.230;
     elseif(1 == sps_type)
-        filter_delay = 0.120;
+        filter_delay = 0.115;
     elseif(2 == sps_type)
-        filter_delay = 0.060;
+        filter_delay = 0.058;
     end
 elseif (2 == filter_type) % minimum phase filter
     if (0 == sps_type)
-        filter_delay = 0.460;
+        filter_delay = 0.450;
     elseif(1 == sps_type)
-        filter_delay = 0.230;
+        filter_delay = 0.225;
     elseif(2 == sps_type)
-        filter_delay = 0.115;
+        filter_delay = 0.113;
     end
 end
 
