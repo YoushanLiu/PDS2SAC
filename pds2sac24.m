@@ -617,7 +617,7 @@ if (~exist(station_daily_path, 'dir'))
 end
 
 
-nzmsec = round((starttime_segment.Second - fix(starttime_segment.Second))*1000);
+nzmsec = fix((starttime_segment.Second - fix(starttime_segment.Second))*1000);
 datestr = sprintf('%4.4d.%3.3d', starttime_segment.Year, julday);
 timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', starttime_segment.Hour, starttime_segment.Minute, ...
                                                        fix(starttime_segment.Second), nzmsec);
@@ -734,7 +734,7 @@ SAC.NZJDAY = julday;
 SAC.NZHOUR = starttime.Hour;
 SAC.NZMIN = starttime.Minute;
 SAC.NZSEC = fix(starttime.Second);
-%SAC.NZMSEC = round((starttime.Second - fix(starttime.Second))*1000);
+%SAC.NZMSEC = fix((starttime.Second - fix(starttime.Second))*1000);
 SAC.NZMSEC = nzmsec;
 SAC.NVHDR = 6;
 SAC.STLA = stla;
