@@ -19,8 +19,8 @@ input_data_folder = './JD.Group4.Raw';
 output_data_folder = './SAC.Group4';
 input_data_folder = './JD.Group5.PDS.Raw';
 output_data_folder = './SAC.Group5.PDS';
-input_data_folder = './DATA_PDS_Raw';
-output_data_folder = './SAC.Groups1-4.new2';
+input_data_folder = '../PDS2';
+output_data_folder = './SAC.PDS2.minus2';
 % input_data_folder = './��������';
 % output_data_folder = './Group2';
 % input_data_folder = './JD2';
@@ -31,23 +31,48 @@ if (~exist(output_data_folder, 'dir'))
     mkdir(output_data_folder);
 end
 
-network = 'NCISP9';
-stainfo = read_stainfo('STATIONS_JD.dat');
+% network = 'NCISP9';
+% stainfo = read_stainfo('STATIONS_JD.dat');
+network = 'XXXX';
+stainfo = [];
 
 
-% filename = './DATA_PDS_Raw/DATA_4/1020/0410073_.1292';
-% filename = './DATA_PDS_Raw/DATA_4/2130/0310152_.1245';
-% filename = './DATA_PDS_Raw/DATA_4/3180/0609234_.1194';
+% % filename = '../PDS2/DATA_1/918/0510062_.0918';
+% filename = '../PDS2/DATA_1/918/0510062_.0918';
+% % filename = '../PDS2/DATA_1/917/0510080_.0917';
 % readpds(filename, output_data_folder, network, stainfo, downsampling_rate);
 % return
 
 
-% filename = './DATA_PDS_Raw/DATA_3/1020/2810283_.1085';
-% filename = './DATA_PDS_Raw/DATA_3/2130/2714163_.0555';
-% filename = './DATA_PDS_Raw/DATA_3/3180/3009520_.1098';
-% filename = './DATA_PDS_Raw/DATA_3/4250/3009574_.1239';
-% filename = './DATA_PDS_Raw/DATA_4/1020/0410073_.1292';
-% filename = './DATA_PDS_Raw/DATA_1/1020/1614221_.1251';
+% filename = '../PDS2/DATA_2/918/1417220_.0918';
+% % filename = '../PDS2/DATA_2/917/1417315_.0917';
+% readpds(filename, output_data_folder, network, stainfo, downsampling_rate);
+% return
+
+
+% filename = '../PDS2/DATA_2/309/1417291_.0309';
+% filename = '../PDS2/DATA_2/310/1417260_.0310';
+% readpds(filename, output_data_folder, network, stainfo, downsampling_rate);
+% return
+
+
+% filename = ['../PDS2/DATA_1/309/', '0510091_.0309'];
+% % filename = ['../PDS2/DATA_1/917/', '0510080_.0917'];
+% % filename = ['../PDS2/DATA_1/918/', '0510062_.0918'];
+% readpds(filename, output_data_folder, network, stainfo, downsampling_rate);
+% return
+
+
+
+% % filename = '../PDS2/DATA_1/309/0510091_.0309';
+% filename = ['../PDS2/DATA_1/918/', '0510062_.0918'];
+% readpds(filename, output_data_folder, network, stainfo, downsampling_rate);
+% return
+% % filename = './DATA_Raw/DATA_3/1020/2810283_.1085';
+% filename = './DATA_Raw/DATA_3/2130/2714163_.0555';
+% filename = './DATA_Raw/DATA_3/3180/3009520_.1098';
+% filename = './DATA_Raw/DATA_3/4250/3009574_.1239';
+% filename = './DATA_Raw/DATA_4/1020/0410073_.1292';
 % readpds(filename, output_data_folder, network, stainfo, downsampling_rate);
 % return
 
@@ -60,8 +85,8 @@ for iperiod = 1:1:nperiod_folders_list
 
     station_path = [period_path, period_folders_list(iperiod).name, '/'];
 
-    station_folders_list = dir([station_path, '????']);
-%     station_folders_list = dir([station_path, '5*']);
+%     station_folders_list = dir([station_path, '[0-9]*']);
+    station_folders_list = dir([station_path, '0*']);
     nstation_folders_list = length(station_folders_list);
 
     parfor istation = 1:nstation_folders_list
@@ -116,6 +141,8 @@ frewind(fidin);
 % read clock drafting years
 fseek(fidin, 1536, 0);
 
+
+
 packet = fread(fidin, 500, 'uchar');
 packet = reshape(packet, 10, 50);
 fseek(fidin, 12, 0);
@@ -129,6 +156,8 @@ end
 Month = packet(10,2);
 Day = packet(10,3);
 Hour = packet(10,4);
+% % % convert to UTC time
+% Hour = Hour - 8;
 GPS_locked_start.Year = Year;
 GPS_locked_start.Month = Month;
 GPS_locked_start.Day = Day;
@@ -136,7 +165,9 @@ GPS_locked_start.Hour = Hour;
 % GPS_locked_start
 
 
+
 fseek(fidin, (npackets-2)*512, 0);
+
 
 
 packet = fread(fidin, 500, 'uchar');
@@ -151,11 +182,19 @@ else
 end
 Month = packet(10,2);
 Day = packet(10,3);
-Hour = packet(10,4);
 GPS_locked_end.Year = Year;
 GPS_locked_end.Month = Month;
 GPS_locked_end.Day = Day;
+
+Hour = packet(10,4);
+% % % convert to UTC time
+% Hour = Hour - 8
 GPS_locked_end.Hour = Hour;
+% % Minute = packet(10,5)
+% % Second = packet(10,6)
+% % MicroSecond = packet(10,7)*10 + packet(10,8)
+
+
 
 frewind(fidin);
 % =========================================================================
@@ -208,10 +247,33 @@ filter_delay = 0;
 % fseek(fidin, 512, 0);
 clock_block1 = fread(fidin, 512, 'uchar');
 clock_block1 = reshape(clock_block1, 8, 64);
+% ptr_clock1 = clock_block1(1, 64);
+% clock_block1 = zeros(8, 64);
+% for k = 1:1:64
+%     clock_block1(:,k) = fread(fidin, 8, 'uchar');
+% end
+% ptr_clock1 = clock_block1(1,64);
+% packet = fread(fidin, 512, 'uchar');
+% packet = reshape(packet, 8, 64);
+% nclock_diff = hex2dec(packet(1,63));
+% for k = 1:1:nclock_diff
+%     GPS_time.day = packet(1,k);
+%     GPS_time.hour = packet(2,k);
+%     GPS_time.minute = packet(3,k);
+%     GPS_time.second = packet(4,k);
+%     DAS_time.minute = packet(5,k);
+%     DAS_time.second = packet(6,k);
+%     DAS_time.microsecond = (packet(7,k)*10 + packet(8,k));
+% end
+% clock_block1(2,:) = clock_block1(2,:) - 8;
 % GPS_locked_start
 % GPS_locked_end
 % clock_block1'
 % return
+
+
+
+
 ptr_clock1_last = clock_block1(1,64);
 lp = ptr_clock1_last;
 for k = 62:-1:1
@@ -228,7 +290,6 @@ for k = 62:-1:1
         lp = 62;
     end
 end
-% ptr_clock1_last
 lp = ptr_clock1_last;
 isfound = false;
 ptr_clock1_end = -1;
@@ -251,14 +312,13 @@ end
 if (-1 == ptr_clock1_end)
     return
 end
-% ptr_clock1_end
 lp = ptr_clock1_end;
 ptr_clock1_start = -1;
 for k = 62:-1:1
     Day = clock_block1(1,lp);
     %Hour = clock_block1(2,lp);
     if (Day == GPS_locked_start.Day)
-    %if ((Day == GPS_locked_start.Day) && (Hour == GPS_locked_start.Hour))
+    %if ((Day == GPS_locked_start.Day) && (Hour == GPS_locked_start.Hour)
         ptr_clock1_start = lp;
         break;
     end
@@ -275,89 +335,110 @@ end
 
 
 
-% ptr_clock1_end
-% ptr_clock1_start
-% clock_block1(:,ptr_clock1_start)'
-% clock_block1(:,ptr_clock1_end)'
-% return
+% ptr_clock1 = clock_block1(1,64);
 % isfound = false;
 % ptr_clock1_end = -1;
-% for k = ptr_clock1:-1:ptr_clock1-2
+% for k = ptr_clock1:-1:max(ptr_clock1-2,1)
 %     Day = clock_block1(1,k);
 %     if (Day == GPS_locked_end.Day)
-%         isfound = true;
 %         ptr_clock1_end = k;
+%         isfound = true;
+%         %break;
 %     end
-%     if (isfound || (Day ~= GPS_locked_end.Day))
+%     if (isfound && (Day ~= GPS_locked_end.Day))
 %         break;
 %     end
 % end
+% if (-1 ~= ptr_clock1_end)
+%     GPS_locked_end.Day = clock_block1(1,ptr_clock1_end);
+%     GPS_locked_end.Hour = clock_block1(2,ptr_clock1_end) - 8;
+%     GPS_locked_end.Minute = clock_block1(3,ptr_clock1_end);
+%     GPS_locked_end.Second = clock_block1(4,ptr_clock1_end);
+% 
+%     clock_err_end = round(((clock_block1(5,ptr_clock1_end)*60 + clock_block1(6,ptr_clock1_end) + ...
+%                       0.001*(clock_block1(7,ptr_clock1_end)*10 + clock_block1(8,ptr_clock1_end)) - ...
+%                      (clock_block1(3,ptr_clock1_end)*60 + clock_block1(4,ptr_clock1_end))))*1e6)*1.e-6;
+% end
+% 
+% % clock_block1(:,ptr_clock1_end)'
+% %isfound = false;
 % ptr_clock1_start = -1;
-% ptr_clock1
-% for k = ptr_clock1_end-1:-1:ptr_clock1-2
+% for k = ptr_clock1:-1:1
 %     Day = clock_block1(1,k);
 %     if (Day == GPS_locked_start.Day)
 %         ptr_clock1_start = k;
 %     end
 % end
-% if ((-1 == ptr_clock1_start) || (-1 == ptr_clock1_end))
+% if (-1 == ptr_clock1_start)
 %     return
 % end
+
+
+
+
+
+% for k = ptr_clock1_end-1:-1:1
+%     Day = clock_block1(1,k);
+%     if (Day == GPS_locked_start.Day)
+%         %isfound = true;
+%         ptr_clock1_start = k;
+%         break;
+%     end
+%     %if (isfound && (Day ~= GPS_locked_start.Day))
+%     %if (isfound || (Day ~= GPS_locked_start.Day))
+%     %if (isfound)
+%     %    break;
+%     %end
+% end
+% ptr_clock1_start = ptr_clock1_end -1
+% ptr_clock1_start
 % clock_block1(:,ptr_clock1_start)'
-% clock_block1(:,ptr_clock1_end)'
-% return
+
+
+% GPS_locked_end
+% GPS_locked_start
+% clock_block1(:,ptr_clock1_start)'
+
+
+clock_err_end = fix( ( (clock_block1(5,ptr_clock1_end)*60 + clock_block1(6,ptr_clock1_end)         + ...
+                       (clock_block1(7,ptr_clock1_end)*10 + clock_block1(8,ptr_clock1_end))*0.001) - ...
+                       (clock_block1(3,ptr_clock1_end)*60 + clock_block1(4,ptr_clock1_end)) )*1e6)*1.e-6;
+clock_err_start = fix( ( (clock_block1(5,ptr_clock1_start)*60 + clock_block1(6,ptr_clock1_start)         + ...
+                         (clock_block1(7,ptr_clock1_start)*10 + clock_block1(8,ptr_clock1_start))*0.001) - ...
+                         (clock_block1(3,ptr_clock1_start)*60 + clock_block1(4,ptr_clock1_start)) )*1e6)*1.e-6;
+clock_err_duration = clock_err_end - clock_err_start;
+
+
+
 
 
 GPS_locked_end.Day = clock_block1(1,ptr_clock1_end);
 GPS_locked_end.Hour = clock_block1(2,ptr_clock1_end) - 8;
 GPS_locked_end.Minute = clock_block1(3,ptr_clock1_end);
 GPS_locked_end.Second = clock_block1(4,ptr_clock1_end);
-% clock_block1'
-% clock_block1(:,ptr_clock1_end)'
-% ptr_clock1_start = -1;
-% isfound = false;
-% for k = ptr_clock1_end-1:-1:1
-%     if (clock_block1(1,k) == GPS_locked_start.Day)
-%         isfound = true;
-%         ptr_clock1_start = k;
-%     end
-%     %if (isfound && (clock_block1(1,k) ~= GPS_locked_start.Day))
-%     if (isfound || (clock_block1(1,k) ~= GPS_locked_start.Day))
-%         break;
-%     end
-% end
-% if (-1 == ptr_clock1_start)
-%     return;
-% end
-% clock_block1(:,ptr_clock1_start)'
 GPS_locked_start.Day = clock_block1(1,ptr_clock1_start);
 GPS_locked_start.Hour = clock_block1(2,ptr_clock1_start) - 8;
 GPS_locked_start.Minute = clock_block1(3,ptr_clock1_start);
 GPS_locked_start.Second = clock_block1(4,ptr_clock1_start);
-% GPS_locked_start
-% GPS_locked_end
-% clock_block1(:,ptr_clock1_start)'
-
-
-
-
-clock_err_start = round( ( (clock_block1(5,ptr_clock1_start)*60 + clock_block1(6,ptr_clock1_start)         + ...
-                           (clock_block1(7,ptr_clock1_start)*10 + clock_block1(8,ptr_clock1_start))*0.001) - ...
-                           (clock_block1(3,ptr_clock1_start)*60 + clock_block1(4,ptr_clock1_start)) )*1e6)*1.e-6;
-clock_err_end = round( ( (clock_block1(5,ptr_clock1_end)*60 + clock_block1(6,ptr_clock1_end)         + ...
-                         (clock_block1(7,ptr_clock1_end)*10 + clock_block1(8,ptr_clock1_end))*0.001) - ...
-                         (clock_block1(3,ptr_clock1_end)*60 + clock_block1(4,ptr_clock1_end)) )*1e6)*1.e-6;
-clock_err_duration = clock_err_end - clock_err_start;
-
-
-
-
 GPS_starttime = datetime(GPS_locked_start.Year, GPS_locked_start.Month, GPS_locked_start.Day, GPS_locked_start.Hour, ...
                       GPS_locked_start.Minute, GPS_locked_start.Second, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+% if (-1 ~= ptr_clock1_end)
 GPS_endtime = datetime(GPS_locked_end.Year, GPS_locked_end.Month, GPS_locked_end.Day, GPS_locked_end.Hour, ...
                 GPS_locked_end.Minute, GPS_locked_end.Second, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
 GPS_locked_duration = etime(datevec(GPS_endtime), datevec(GPS_starttime));
+
+
+clock_err_step = clock_err_duration / GPS_locked_duration;
+
+% end
+% GPS_locked_start.Year
 % return
+
+
+
+% time shift signature
+tsgn = -1;
+
 
 
 
@@ -366,9 +447,14 @@ GPS_locked_duration = etime(datevec(GPS_endtime), datevec(GPS_starttime));
 fseek(fidin, 512, 0);
 % clock_block2 = fread(fidin, 512, 'uchar');
 % clock_block2 = reshape(clock_block2, 8, 64);
+% ptr_clock2 = clock_block2(1, 64);
+% clock_block2 = zeros(8, 64);
+% for k = 1:1:64
+%     clock_block2(:,k) = fread(fidin, 8, 'uchar');
+% end
 % ptr_clock2 = clock_block2(1,64);
 % clock_block2'
-% return
+% % return
 
 
 
@@ -398,7 +484,6 @@ offset = 2^24;
 
 half_dt = 0.5*dt;
 Seconds_segment = 600;
-% Seconds_segment = 1800;
 % Seconds_segment = 3600;
 Seconds_packet = 49*dt;
 Seconds_half_segment = 0.5*Seconds_segment;
@@ -473,12 +558,12 @@ station = path_splitted{1};
 % stlo = stainfo.stlo(ista);
 % stel = stainfo.stel(ista);
 
-ista = strmatch(station, stainfo.stnm);
-% ista = find(1 == contains(stainfo.stnm, station));
-% ista = find(1 == startsWith(stainfo.stnm, station));
-stla = str2double(cell2mat(stainfo.stla(ista)));
-stlo = str2double(cell2mat(stainfo.stlo(ista)));
-stel = str2double(cell2mat(stainfo.stel(ista)));
+% ista = strmatch(station, stainfo.stnm);
+% % ista = find(1 == contains(stainfo.stnm, station));
+% % ista = find(1 == startsWith(stainfo.stnm, station));
+% stla = str2double(cell2mat(stainfo.stla(ista)));
+% stlo = str2double(cell2mat(stainfo.stlo(ista)));
+% stel = str2double(cell2mat(stainfo.stel(ista)));
 
 
 % station
@@ -489,7 +574,6 @@ stel = str2double(cell2mat(stainfo.stel(ista)));
 npts = 0;
 nskip = 0;
 for k = 1:1:npackets
-% for k = 1:1:112525
 
     wfn = zeros(50,1);
     wfe = zeros(50,1);
@@ -518,38 +602,46 @@ for k = 1:1:npackets
 
 
 
+
     starttime_prev = starttime;
     starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
     GPS_err_since = clock_err_start;
-    starttime_corrected = starttime + seconds(clock_err_start);
-    if (etime(datevec(GPS_endtime), datevec(starttime_corrected)) > 0.0)
-        GPS_err_since = clock_err_start + etime(datevec(starttime_corrected), datevec(GPS_starttime)) / GPS_locked_duration * clock_err_duration;
+    %starttime + seconds(clock_err_start)
+    %starttime_corrected = starttime + seconds(clock_err_start);
+    %%if ((-1 ~= ptr_clock1_end) && (etime(datevec(GPS_endtime), datevec(starttime_corrected)) > 0.0))
+    %if (etime(datevec(GPS_endtime), datevec(starttime_corrected)) > 0.0)
+    %    GPS_err_since = clock_err_start + etime(datevec(starttime_corrected), datevec(GPS_starttime)) / GPS_locked_duration * clock_err_duration;
+    %end
+    if (etime(datevec(GPS_endtime), datevec(starttime)) > 0.0)
+        GPS_err_since = clock_err_start + etime(datevec(starttime), datevec(GPS_starttime)) * clock_err_step;
     end
-    %starttime = starttime + seconds(filter_delay);
     %starttime = starttime + seconds(filter_delay + GPS_err_since);
-    starttime = starttime - seconds(filter_delay + GPS_err_since);
-%     filter_delay
-%     GPS_err_since
+    %starttime = starttime - seconds(filter_delay + GPS_err_since);
+    starttime = starttime + seconds(tsgn*GPS_err_since - filter_delay);
     %starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS') + seconds(filter_delay);
     % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS') + seconds(filter_delay);
     % endtime = starttime;
     %endtime.Second = endtime.Second + 49*dt;
     endtime = starttime + seconds(Seconds_packet);
-% % clock_err_start + GPS_err_since
-% % clock_err_start + etime(datevec(starttime), datevec(GPS_starttime)) / GPS_locked_duration * clock_err_duration
-% clock_err_start + (clock_err_end - clock_err_start)
+% if (1 == k)
 % GPS_err_since
+% % etime(datevec(starttime + seconds(clock_err_start)), datevec(GPS_starttime))
+% % GPS_locked_duration
+% % clock_err_duration
+% % clock_err_start + etime(datevec(starttime), datevec(GPS_starttime)) / GPS_locked_duration * clock_err_duration
 % return
+% end
 
 
-    % if the number of GPS in current packet is less than the nGPS_min
+
+    % If the number of GPS in current packet is less than the nGPS_min
     % (i.e. 4), I consider this packet is GPS unlocked. Then I discard it.
     if (packet(10,33) < nGPS_min)
         if (npts > 0)
             % write into a new file because of discontinuous clock
             % write sac file
-            save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                        starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+            save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, tsgn, ...
+              clock_err_step, starttime_segment, stla, stlo, stel, network, station, output_data_folder);
         end
         npts = 0;
         nskip = 0;
@@ -589,8 +681,9 @@ for k = 1:1:npackets
 
         %endtime_segment = starttime_segment + hours(1);
         %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
- 
-        starttime_segment = starttime + seconds(nskip*dt);
+
+        %starttime_segment = starttime + seconds(nskip*dt);
+        starttime_segment = starttime + seconds(nskip*dt) * (1 + tsgn*clock_err_step);
         endtime_segment = datetime(starttime_segment.Year, starttime_segment.Month, starttime_segment.Day, starttime_segment.Hour, ...
                                                                             59, 59, 999, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
     end
@@ -602,29 +695,29 @@ for k = 1:1:npackets
 
     % get eatra header information
     % latitude
-    % stla_key = char(packet(10,9));
-    % stla = (str2double(char(packet(10,10)))*10 + str2double(char(packet(10,11)))) + ...
-    %       ((str2double(char(packet(10,12)))*10 + str2double(char(packet(10,13)))) + ...
-    %        1.e-4*(str2double(char(packet(10,14)))*1e3 + str2double(char(packet(10,15)))*1e2 + ...
-    %        str2double(char(packet(10,16)))*1e1 + str2double(char(packet(10,17))))) / 60.0;
-    % if (('S' == stla_key) || ('s' == stla_key))
-    %     stla = -stla;
-    % end
+    stla_key = char(packet(10,9));
+    stla = (str2double(char(packet(10,10)))*10 + str2double(char(packet(10,11)))) + ...
+          ((str2double(char(packet(10,12)))*10 + str2double(char(packet(10,13)))) + ...
+           1.e-4*(str2double(char(packet(10,14)))*1e3 + str2double(char(packet(10,15)))*1e2 + ...
+           str2double(char(packet(10,16)))*1e1 + str2double(char(packet(10,17))))) / 60.0;
+    if (('S' == stla_key) || ('s' == stla_key))
+        stla = -stla;
+    end
     % stahead(k).stla = stla;
 
     % longitude
-    % stlo_key = char(packet(10,18));
-    % stlo = (str2double(char(packet(10,19)))*100 + str2double(char(packet(10,20)))*10 + str2double(char(packet(10,21)))) + ...
-    %       ((str2double(char(packet(10,22)))*10 + str2double(char(packet(10,23)))) + ...
-    %        1.e-4*(str2double(char(packet(10,24)))*1e3 + str2double(char(packet(10,25)))*1e2 + ...
-    %        str2double(char(packet(10,26)))*1e1 + str2double(char(packet(10,27))))) / 60.0;
-    % if (('W' == stlo_key) || ('w' == stlo_key))
-    %    stlo = -stlo;
-    % end
+    stlo_key = char(packet(10,18));
+    stlo = (str2double(char(packet(10,19)))*100 + str2double(char(packet(10,20)))*10 + str2double(char(packet(10,21)))) + ...
+          ((str2double(char(packet(10,22)))*10 + str2double(char(packet(10,23)))) + ...
+           1.e-4*(str2double(char(packet(10,24)))*1e3 + str2double(char(packet(10,25)))*1e2 + ...
+           str2double(char(packet(10,26)))*1e1 + str2double(char(packet(10,27))))) / 60.0;
+    if (('W' == stlo_key) || ('w' == stlo_key))
+       stlo = -stlo;
+    end
     % stahead(k).stlo = stlo;
 
     % elevtion
-    % stel = str2double(strcat([packet(10,28), packet(10,29), packet(10,30), packet(10,31), packet(10,32)]));
+    stel = str2double(strcat([packet(10,28), packet(10,29), packet(10,30), packet(10,31), packet(10,32)]));
     % stahead(k).stel = stel;
 % stla
 % stlo
@@ -690,9 +783,8 @@ for k = 1:1:npackets
     if (~is_continuous)
         % write into a new file because of discontinuous clock
         % write sac file
-% [k, 1]
-        save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+        save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, tsgn, ...
+          clock_err_step, starttime_segment, stla, stlo, stel, network, station, output_data_folder);
 
         npts = 0;
         nskip = 0;
@@ -749,11 +841,10 @@ for k = 1:1:npackets
             sace(npts+1:npts+50) = wfe(1:50);
             npts = npts + 50;
             if (npackets == k)
-% [k, 2]
                 % At the end of the file, save the last segment into files
                 % write sac files
-                save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                            starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, tsgn, ...
+                  clock_err_step, starttime_segment, stla, stlo, stel, network, station, output_data_folder);
                 break;
             end
         else
@@ -803,11 +894,9 @@ for k = 1:1:npackets
 % starttime_segment
 % endtime_segment
 
-% [k, 3]
-% starttime_segment
                 % write sac files
-                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, tsgn, ...
+                          clock_err_step, starttime_segment, stla, stlo, stel, network, station, output_data_folder);
 
 
 
@@ -869,7 +958,8 @@ for k = 1:1:npackets
                 % endtime_segment.Second = endtime_segment.Second - dt;
 
 
-                starttime_segment = starttime + seconds((npts_part + nskip)*dt);
+                %starttime_segment = starttime + seconds((npts_part + nskip)*dt);
+                starttime_segment = starttime + seconds((npts_part + nskip)*dt) * (1 + tsgn*clock_err_step);
                 % starttime_segment = starttime + seconds((npts_part - 1 + nskip + 1)*dt);
                 endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
 
@@ -905,9 +995,8 @@ for k = 1:1:npackets
                 %                                            starttime  endtime
                 %
                 % write sac files
-% [k, 4]
-                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, tsgn, ...
+                          clock_err_step, starttime_segment, stla, stlo, stel, network, station, output_data_folder);
 
 
                 npts = 0;
@@ -933,7 +1022,8 @@ for k = 1:1:npackets
                 % endtime_segment.Second = endtime_segment.Second - dt;
 
 
-                starttime_segment = starttime + seconds((nskip+1)*dt);
+                %starttime_segment = starttime + seconds((nskip+1)*dt);
+                starttime_segment = starttime + seconds((nskip+1)*dt) * (1 + tsgn*clock_err_step);
                 endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
 
 
@@ -969,14 +1059,14 @@ fclose(fidin);
 
 
 
-function nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                              starttime_segment, stla, stlo, stel, network, station, output_data_folder)
+function nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, tsgn, ...
+                    clock_err_step, starttime_segment, stla, stlo, stel, network, station, output_data_folder)
 
 
 % preprocessing
 % downsampling
 [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, ...
-                                                             dt, npts, nskip, downsampling_rate, b, a);
+                                       dt, npts, nskip, downsampling_rate, b, a, tsgn, clock_err_step);
 % end of preprocessing
 
 
@@ -1081,25 +1171,39 @@ fprintf('%s is done ... \n', [datestr, '.', timestr, '.', network, '.', station,
 
 
 function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, ...
-                                                                       dt, npts, nskip, downsampling_rate, b, a)
+                                                 dt, npts, nskip, downsampling_rate, b, a, tsgn, clock_err_step)
+
+
+sacz_segment = sacz(1:npts);
+sacn_segment = sacn(1:npts);
+sace_segment = sace(1:npts);
+if (abs(clock_err_step) > 0.0)
+    t = (0:1:npts-1)'*dt;
+    tp = (0:1:npts-1)'*clock_err_step*tsgn;
+    sacz_segment = interp1(t+tp, sacz_segment, t, 'pchip', 'extrap');
+    sacn_segment = interp1(t+tp, sacn_segment, t, 'pchip', 'extrap');
+    sace_segment = interp1(t+tp, sace_segment, t, 'pchip', 'extrap');
+    clear t tp;
+end
+
 
 
 decimate_rate = fix(sampling_rate/downsampling_rate);
 if ((1 ~= decimate_rate) && (npts > 12))
 	% downsampling
-	sacz = filtfilt(b, a, sacz(1:npts));
-	sacn = filtfilt(b, a, sacn(1:npts));
-	sace = filtfilt(b, a, sace(1:npts));
+	sacz_segment = filtfilt(b, a, sacz_segment);
+	sacn_segment = filtfilt(b, a, sacn_segment);
+	sace_segment = filtfilt(b, a, sace_segment);
 end
 indx = (nskip+1:decimate_rate:npts);
-sacz_out = sacz(indx);
-sacn_out = sacn(indx);
-sace_out = sace(indx);
+sacz_out = sacz_segment(indx);
+sacn_out = sacn_segment(indx);
+sace_out = sace_segment(indx);
 
 npts_out = length(indx);
 dt_out = decimate_rate*dt;
 
-clear indx;
+clear indx sacz_segment sacn_segment sace_segment;
 
 
 % t1 = nskip*dt + (0:1:npts-1)'*dt;
@@ -1210,7 +1314,7 @@ SAC.NZJDAY = julday;
 SAC.NZHOUR = starttime.Hour;
 SAC.NZMIN = starttime.Minute;
 SAC.NZSEC = fix(starttime.Second);
-%SAC.NZMSEC = round((starttime.Second - fix(starttime.Second))*1000);
+%SAC.NZMSEC = fix((starttime.Second - fix(starttime.Second))*1000);
 SAC.NZMSEC = nzmsec;
 SAC.NVHDR = 6;
 SAC.STLA = stla;
