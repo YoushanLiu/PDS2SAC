@@ -658,22 +658,25 @@ function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(
                                                                        dt, npts, nskip, downsampling_rate, b, a)
 
 
+sacz_segment = sacz(1:npts);
+sacn_segment = sacn(1:npts);
+sace_segment = sace(1:npts);
 decimate_rate = fix(sampling_rate/downsampling_rate);
 if ((1 ~= decimate_rate) && (npts > 6))
     % downsampling
-    sacz = filtfilt(b, a, sacz(1:npts));
-    sacn = filtfilt(b, a, sacn(1:npts));
-    sace = filtfilt(b, a, sace(1:npts));
+    sacz_segment = filtfilt(b, a, sacz_segment);
+    sacn_segment = filtfilt(b, a, sacn_segment);
+    sace_segment = filtfilt(b, a, sace_segment);
 end
 indx = (nskip+1:decimate_rate:npts);
-sacz_out = sacz(indx);
-sacn_out = sacn(indx);
-sace_out = sace(indx);
+sacz_out = sacz_segment(indx);
+sacn_out = sacn_segment(indx);
+sace_out = sace_segment(indx);
 
 npts_out = length(indx);
 dt_out = decimate_rate*dt;
 
-clear indx;
+clear indx sacz_segment sacn_segment sace_segment;
 
 
 nskip = nskip + decimate_rate*npts_out - npts;
