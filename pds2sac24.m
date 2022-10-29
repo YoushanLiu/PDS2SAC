@@ -622,8 +622,8 @@ end
 
 
 sec = starttime_segment.Second;
-nzsec = round(sec);
-nzmsec = round((sec - nzsec)*1000);
+nzsec = fix(sec);
+nzmsec = fix((sec - nzsec)*1000);
 datestr = sprintf('%4.4d.%3.3d', Year, julday);
 timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', Hour, Minute, nzsec, nzmsec);
 
