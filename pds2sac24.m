@@ -614,7 +614,7 @@ Hour = starttime_segment.Hour;
 Minute = starttime_segment.Minute;
 julday = day(starttime_segment, 'dayofyear');
 % create output path
-datestr = sprintf('%4.4d%3.3d', starttime_segment.Year, julday);
+datestr = sprintf('%4.4d%3.3d', Year, julday);
 station_daily_path = [output_data_folder, '/', station, '/', datestr, '/'];
 if (~exist(station_daily_path, 'dir'))
     mkdir(station_daily_path);
