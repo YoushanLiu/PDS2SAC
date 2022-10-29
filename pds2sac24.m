@@ -52,7 +52,7 @@ for istage = 1:1:nstage_folders_list
             filename = [daily_path, daily_files_list(ifile).name];
 
             fprintf('\n\nConverting %s ...\n', filename);
-            readpds(filename, output_data_folder, network, stainfo, downsampling_rate);
+            readpds(filename, output_data_folder, network, stainfo, downsampling_rate, Seconds_segment);
 
         end
         
