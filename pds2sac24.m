@@ -12,6 +12,7 @@ clc;
 
 
 downsampling_rate = 20.0;
+Seconds_segment = 3600;
 
 
 input_data_folder = './DATA_RAW';
@@ -25,18 +26,18 @@ network = 'NCISP9';
 stainfo = read_stainfo('STATIONS_JD.dat');
 
 
-period_path = [input_data_folder, '/'];
-period_folders_list = dir([period_path, '*ÒÇÆ÷*']);
-nperiod_folders_list = length(period_folders_list);
+stage_path = [input_data_folder, '/'];
+stage_folders_list = dir([stage_path, '*ÒÇÆ÷*']);
+nstage_folders_list = length(stage_folders_list);
 
-for iperiod = 1:1:nperiod_folders_list
+for istage = 1:1:nstage_folders_list
 
-    station_path = [period_path, period_folders_list(iperiod).name, '/'];
+    station_path = [stage_path, stage_folders_list(istage).name, '/'];
 
     station_folders_list = dir([station_path, '20*']);
     nstation_folders_list = length(station_folders_list);
 
-    parfor istation = 1:1:nstation_folders_list
+    parfor istation = 1:nstation_folders_list
     %for istation = 1:1:nstation_folders_list
 
 %         istation
@@ -63,7 +64,7 @@ end
 
 
 
-function readpds(filename, output_data_folder, network, stainfo, downsampling_rate)
+function readpds(filename, output_data_folder, network, stainfo, downsampling_rate, Seconds_segment)
 
 
 fidin = fopen(filename, 'r', 'n');
@@ -166,7 +167,7 @@ offset = 2^24;
 
 
 half_dt = 0.5*dt;
-Seconds_segment = 3600;
+%Seconds_segment = 3600;
 Seconds_packet = 49*dt;
 Seconds_half_segment = 0.5*Seconds_segment;
 npts_segment = nearest(Seconds_segment/dt);
