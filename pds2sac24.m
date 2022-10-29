@@ -617,7 +617,9 @@ if (~exist(station_daily_path, 'dir'))
 end
 
 
-nzmsec = fix((starttime_segment.Second - fix(starttime_segment.Second))*1000);
+sec = starttime_segment.Second;
+nzsec = round(sec);
+nzmsec = round((sec - nzsec)*1000);
 datestr = sprintf('%4.4d.%3.3d', starttime_segment.Year, julday);
 timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', starttime_segment.Hour, starttime_segment.Minute, ...
                                                        fix(starttime_segment.Second), nzmsec);
@@ -627,24 +629,24 @@ prefix = [station_daily_path, datestr, '.', timestr, '.', network, '.', station,
 % output sac file
 %outfile = [prefix, 'BHN.SAC'];
 cmp = 'BHN';
-SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzmsec, ...
-                    stla, stlo, stel, network, station, npts_out, dt_out, cmp);
+SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
+                           stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sacn_out;
 writesac(SAC);
 clear SAC;
 
 %outfile = [prefix, 'BHE.SAC'];
 cmp = 'BHE';
-SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzmsec, ...
-                    stla, stlo, stel, network, station, npts_out, dt_out, cmp);
+SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
+                           stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sace_out;
 writesac(SAC);
 clear SAC;
 
 %outfile = [prefix, 'BHZ.SAC'];
 cmp = 'BHZ';
-SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzmsec, ...
-                    stla, stlo, stel, network, station, npts_out, dt_out, cmp);
+SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
+                           stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sacz_out;
 writesac(SAC);
 clear SAC;
@@ -721,7 +723,7 @@ sta = cell2struct(sta, stafields, 1);
 
 
 
-function SAC = initi_sacheader(outfile, starttime, julday, nzmsec, stla, stlo, stel, network, station, npts, dt, cmp)
+function SAC = initi_sacheader(outfile, starttime, julday, nzsec, nzmsec, stla, stlo, stel, network, station, npts, dt, cmp)
 
 SAC = sacstruct(1);
 SAC.FILENAME = outfile;
@@ -736,8 +738,9 @@ SAC.NZYEAR = starttime.Year;
 SAC.NZJDAY = julday;
 SAC.NZHOUR = starttime.Hour;
 SAC.NZMIN = starttime.Minute;
-SAC.NZSEC = fix(starttime.Second);
+%SAC.NZSEC = fix(starttime.Second);
 %SAC.NZMSEC = fix((starttime.Second - fix(starttime.Second))*1000);
+SAC.NZSEC = nzsec;
 SAC.NZMSEC = nzmsec;
 SAC.NVHDR = 6;
 SAC.STLA = stla;
