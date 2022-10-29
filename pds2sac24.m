@@ -609,6 +609,9 @@ sacz_out = detrend(sacz_out, 'linear');
 %%end
 
 
+Year = starttime_segment.Year;
+Hour = starttime_segment.Hour;
+Minute = starttime_segment.Minute;
 julday = day(starttime_segment, 'dayofyear');
 % create output path
 datestr = sprintf('%4.4d%3.3d', starttime_segment.Year, julday);
@@ -621,9 +624,9 @@ end
 sec = starttime_segment.Second;
 nzsec = round(sec);
 nzmsec = round((sec - nzsec)*1000);
-datestr = sprintf('%4.4d.%3.3d', starttime_segment.Year, julday);
-timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', starttime_segment.Hour, starttime_segment.Minute, ...
-                                                       fix(starttime_segment.Second), nzmsec);
+datestr = sprintf('%4.4d.%3.3d', Year, julday);
+timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', Hour, Minute, nzsec, nzmsec);
+
 
 
 prefix = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..'];
