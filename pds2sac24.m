@@ -1,7 +1,8 @@
 function pds2sac24
 
-clear;
+clear all;
 clc;
+fclose all;
 
 % pool = gcp;
 % if (~isempty(pool))
@@ -15,30 +16,38 @@ downsampling_rate = 20.0;
 Seconds_segment = 3600;
 
 
-input_data_folder = './DATA_RAW';
-output_data_folder = './Group5_PDS';
+inpath = './JD.Group4.Raw';
+outpath = './SAC.Group4';
+inpath = './JD.Group5.PDS.Raw';
+outpath = './SAC.Group5.PDS';
+% inpath = './��������';
+% outpath = './Group2';
+% inpath = './JD2';
+% outpath = './Group2';
 
-if (~exist(output_data_folder, 'dir'))
-    mkdir(output_data_folder);
+
+if (~exist(outpath, 'dir'))
+    mkdir(outpath);
 end
 
 network = 'NCISP9';
 stainfo = read_stainfo('STATIONS_JD.dat');
 
 
-stage_path = [input_data_folder, '/'];
-stage_folders_list = dir([stage_path, '*ÒÇÆ÷*']);
+stage_path = [inpath, '/'];
+stage_folders_list = dir([stage_path, 'DATA_*']);
 nstage_folders_list = length(stage_folders_list);
 
 for istage = 1:1:nstage_folders_list
 
     station_path = [stage_path, stage_folders_list(istage).name, '/'];
 
-    station_folders_list = dir([station_path, '20*']);
+    %station_folders_list = dir([station_path, '????']);
+    station_folders_list = dir([station_path, '5*']);
     nstation_folders_list = length(station_folders_list);
 
-    parfor istation = 1:nstation_folders_list
-    %for istation = 1:1:nstation_folders_list
+    parfor istation = 1:1:nstation_folders_list
+%     for istation = 1:1:6
 
 %         istation
         daily_path = [station_path, station_folders_list(istation).name, '/'];
@@ -47,12 +56,20 @@ for istage = 1:1:nstage_folders_list
         nfiles = length(daily_files_list);
 
         for ifile = 1:nfiles
-        %parfor ifile = 1:nfiles
 
             filename = [daily_path, daily_files_list(ifile).name];
+%             filename = './胶东�?��/山东�?��数据/2017.3.24/1714251_.1140'
+
+% filename = './��������/�����������?2017.03.22/1710100_.1268';
+% filename = './胶东�?��/山东�?��数据/2017.3.27/2009195_.1051'
+%2017.03.22/1709452_.1266
+%2017.03.22/1709562_.1265
+% filename = './胶东四组/胶东四组数据/2017.03.22/1710100_.1268'
+% filename = './胶东四组/胶东四组数据/2017.03.22/1709562_.1265'
+% filename = './胶东四组/胶东四组数据/2017.03.25/1810105_.1145'
 
             fprintf('\n\nConverting %s ...\n', filename);
-            readpds(filename, output_data_folder, network, stainfo, downsampling_rate, Seconds_segment);
+            readpds(filename, network, stainfo, downsampling_rate, Seconds_segment, outpath);
 
         end
         
@@ -64,7 +81,7 @@ end
 
 
 
-function readpds(filename, output_data_folder, network, stainfo, downsampling_rate, Seconds_segment)
+function readpds(filename, network, stainfo, downsampling_rate, Seconds_segment, outpath)
 
 
 fidin = fopen(filename, 'r', 'n');
@@ -78,6 +95,7 @@ frewind(fidin);
 % read control block
 packet = fread(fidin, 512, 'uchar');
 
+
 % get header terms
 % pdshead.head = strcat(packet(1:4).');
 % pdshead.version = strcat(packet(5:8).');
@@ -88,30 +106,31 @@ packet = fread(fidin, 512, 'uchar');
 % pdshead.gain = 2^packet(45);
 % pdshead.sampling_rate = 100*2^packet(47);
 % pdshead.delta = 1.0 / pdshead.sampling_rate;
-station = strcat(packet(40:-1:37).');
+station = strcat(packet(40:-1:37).'); % This indicates big_endian
 sps_type = packet(47);
 sampling_rate = 100*2^sps_type;
+decimate_rate = fix(sampling_rate/downsampling_rate);
 dt = 1.0 / sampling_rate;
 gain_inv = 1.0 / (2^packet(45));
-%filter_type = packet(43);
+filter_type = packet(43);
 filter_delay = 0;
-%if (1 == filter_type)     % linear phase filter
-%    if (0 == sps_type)
-%        filter_delay = 0.230;
-%    elseif(1 == sps_type)
-%        filter_delay = 0.115;
-%    elseif(2 == sps_type)
-%        filter_delay = 0.058;
-%    end
-%elseif (2 == filter_type) % minimum phase filter
-%    if (0 == sps_type)
-%        filter_delay = 0.450;
-%    elseif(1 == sps_type)
-%        filter_delay = 0.225;
-%    elseif(2 == sps_type)
-%        filter_delay = 0.113;
-%    end
-%end
+if (1 == filter_type)     % linear phase filter
+    if (0 == sps_type)
+        filter_delay = 0.230;
+    elseif(1 == sps_type)
+        filter_delay = 0.115;
+    elseif(2 == sps_type)
+        filter_delay = 0.058;
+    end
+elseif(2 == filter_type)  % minimum phase filter
+    if (0 == sps_type)
+        filter_delay = 0.450;
+    elseif(1 == sps_type)
+        filter_delay = 0.225;
+    elseif(2 == sps_type)
+        filter_delay = 0.113;
+    end
+end
 
 
 
@@ -126,6 +145,18 @@ fseek(fidin, 512, 0);
 %     clock_block1(:,k) = fread(fidin, 8, 'uchar');
 % end
 % ptr_clock1 = clock_block1(1,64);
+% packet = fread(fidin, 512, 'uchar');
+% packet = reshape(packet, 8, 64);
+% nclock_diff = hex2dec(packet(1,63));
+% for k = 1:1:nclock_diff
+%     GPS_time.day = packet(1,k);
+%     GPS_time.hour = packet(2,k);
+%     GPS_time.minute = packet(3,k);
+%     GPS_time.second = packet(4,k);
+%     DAS_time.minute = packet(5,k);
+%     DAS_time.second = packet(6,k);
+%     DAS_time.microsecond = (packet(7,k)*10 + packet(8,k));
+% end
 
 
 
@@ -139,9 +170,6 @@ fseek(fidin, 512, 0);
 %     clock_block2(:,k) = fread(fidin, 8, 'uchar');
 % end
 % ptr_clock2 = clock_block2(1,64);
-
-
-
 
 
 % stafields = {'starttime'; 'stla'; 'stlo'; 'stel'; 'num_gps'; ...
@@ -167,11 +195,10 @@ offset = 2^24;
 
 
 half_dt = 0.5*dt;
-%Seconds_segment = 3600;
+% Seconds_segment = 3600;
 Seconds_packet = 49*dt;
-Seconds_half_segment = 0.5*Seconds_segment;
+% Seconds_half_segment = 0.5*Seconds_segment;
 npts_segment = nearest(Seconds_segment/dt);
-
 
 
 [b, a] = butter(2, 2*dt*0.499*downsampling_rate, 'low');
@@ -187,15 +214,64 @@ starttime = datetime();
 
 
 
+
+
+if (strcmp(filename, './��������/��������/2017403/2714492_.1131'))
+    station = '2127';
+end
+% if (strcmp(filename, './JD2/JD2/2017403/2714492_.1131'))
+%     station = '2127';
+% end
+if (strcmp(filename, './��������/����������/2017.4.05/2908084_.0586'))
+    station = '3161';
+end
+% if (strcmp(filename, './JD3/JD3/2017.4.05/2908084_.0586'))
+%     station = '3161';
+% end
+% 第二�?2017403/2714492_.1131
+if (~isempty(findstr(filename, '2714492_.1131')))
+    station = '2127';
+    fprintf('Error: head keyword station is wrongle set in filename %s\n', filename);
+end
+% 第三�?2017.4.05/2908084_.0586
+if (~isempty(findstr(filename, '2908084_.0586')))
+    station = '3161';
+    fprintf('Error: head keyword station is wrongle set in filename %s\n', filename);
+end
+
+% station
+if (strcmp('4339', station))
+    station = '4239';
+    fprintf('Error: station is wrongle set in filename %s\n', filename);
+end
+if (strcmp('0802', station))
+    station = '4266';
+    fprintf('Error: station is wrongle set in filename %s\n', filename);
+end
+
+
+path_splitted = regexp(filename, '[\\\/]', 'split');
+path_splitted = regexp(path_splitted{end-1}, '_', 'split');
+station = path_splitted{1};
+
+
+% filter_delay
+% station
+% return
+
+
+
+
+
 % %ista = str2double(station(2:end));
 % ista = strmatch(station, stainfo.stnm);
 % stla = stainfo.stla(ista);
 % stlo = stainfo.stlo(ista);
 % stel = stainfo.stel(ista);
 
-% ista = strmatch(station, stainfo.stnm);
+ista = strmatch(station, stainfo.stnm);
 % ista = find(1 == contains(stainfo.stnm, station));
-ista = find(1 == startsWith(stainfo.stnm, station));
+% ista = find(1 == startsWith(stainfo.stnm, station));
 stla = str2double(cell2mat(stainfo.stla(ista)));
 stlo = str2double(cell2mat(stainfo.stlo(ista)));
 stel = str2double(cell2mat(stainfo.stel(ista)));
@@ -218,6 +294,7 @@ for k = 1:1:npackets
     packet = reshape(packet, 10, 50);
     fseek(fidin, 12, 0);
 
+
     % datetime
     Year = packet(10,1);
     if (Year < 70)
@@ -237,11 +314,10 @@ for k = 1:1:npackets
 
     starttime_prev = starttime;
     starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS') + seconds(filter_delay);
-    % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
-    %endtime = starttime;
+    % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS') + seconds(filter_delay);
+    % endtime = starttime;
     %endtime.Second = endtime.Second + 49*dt;
     endtime = starttime + seconds(Seconds_packet);
-
 
 
 
@@ -251,14 +327,15 @@ for k = 1:1:npackets
         if (npts > 0)
             % write into a new file because of discontinuous clock
             % write sac file
-            save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                        starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+            save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, network, ...
+                    station, stla, stlo, stel, starttime_segment, outpath, nskip);
         end
         npts = 0;
         nskip = 0;
         continue;
     end
 
+ 
 
 
     is_continuous = true;
@@ -270,32 +347,39 @@ for k = 1:1:npackets
     end
 
 
+
     if (0 == npts)
-        % starttime_segment = starttime;
-        % starttime_segment.Second = starttime_segment.Second + nskip*dt;
+        %starttime_segment = starttime;
+        %starttime_segment.Second = starttime_segment.Second + nskip*dt;
 
         % midtime_segment = starttime_segment;
         % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
         % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
-        %                                                   0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+        %                                                    0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
         % endtime_segment.Second = endtime_segment.Second - dt;
 
         % midtime_segment = starttime_segment;
         % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
         % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
-        %                                                                    0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+        %                                                                  0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+        %timestr = sprintf('%4.4d-%3.3dT%2.2d:%2.2d:%2.2d.%3.3d', starttime_segment.Year, dayofyear(starttime_segment)+1, 0, 0, 0, 0);
+        %endtime_segment = datetime(timestr, 'format', 'uuuu-DDD''T''HH:mm:ss.SSS');
         % endtime_segment.Second = endtime_segment.Second - dt;
- 
+
         %endtime_segment = starttime_segment + hours(1);
         %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
-
+ 
         starttime_segment = starttime + seconds(nskip*dt);
         endtime_segment = datetime(starttime_segment.Year, starttime_segment.Month, starttime_segment.Day, starttime_segment.Hour, ...
                                                                             59, 59, 999, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
     end
+% starttime_segment
+% endtime_segment
+% return
 
 
-    % get extra header information
+
+    % get eatra header information
     % latitude
     % stla_key = char(packet(10,9));
     % stla = (str2double(char(packet(10,10)))*10 + str2double(char(packet(10,11)))) + ...
@@ -323,6 +407,7 @@ for k = 1:1:npackets
     % stahead(k).stel = stel;
 % stla
 % stlo
+% stel
 
 
     % %ista = str2double(station(2:end));
@@ -366,23 +451,32 @@ for k = 1:1:npackets
     wfz(indx) = wfz(indx) - offset;
     
     % minus is introduced by the south-positive
-	wfn = -wfn;
-    %wfn = -wfn*gain_inv;
-    %wfe = +wfe*gain_inv;
-    %wfz = +wfz*gain_inv;
+    wfn = -wfn*gain_inv;
+    wfe = +wfe*gain_inv;
+    wfz = +wfz*gain_inv;
 
+
+
+% if(k >= 4166)
+% k
+% starttime
+% endtime
+% starttime_segment
+% endtime_segment
+% end
 
 
     if (~is_continuous)
         % write into a new file because of discontinuous clock
         % write sac file
-        save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+        save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, network, ...
+                station, stla, stlo, stel, starttime_segment, outpath, nskip);
 
         npts = 0;
         nskip = 0;
 
         % starttime_segment = starttime;
+
         % midtime_segment = starttime_segment;
         % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
         % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
@@ -392,9 +486,11 @@ for k = 1:1:npackets
         % midtime_segment = starttime_segment;
         % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
         % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
-        %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+        %                                                                  0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+        %timestr = sprintf('%4.4d-%3.3dT%2.2d:%2.2d:%2.2d.%3.3d', starttime_segment.Year, dayofyear(starttime_segment)+1, 0, 0, 0, 0);
+        %endtime_segment = datetime(timestr, 'format', 'uuuu-DDD''T''HH:mm:ss.SSS');
         % endtime_segment.Second = endtime_segment.Second - dt;
- 
+
         %endtime_segment = starttime_segment + hours(1);
         %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
 
@@ -433,8 +529,8 @@ for k = 1:1:npackets
             if (npackets == k)
                 % At the end of the file, save the last segment into files
                 % write sac files
-                save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                            starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, network, ...
+                        station, stla, stlo, stel, starttime_segment, outpath, nskip);
                 break;
             end
         else
@@ -466,14 +562,61 @@ for k = 1:1:npackets
                 sace(npts+1:npts+npts_part) = wfe(1:npts_part);
                 npts = npts + npts_part;
 
+% npts
+% k
+% starttime
+% starttime_segment
+% endtime
+% endtime_segment
+% etime(datevec(endtime_segment), datevec(starttime))
+% starttime_segment
+% nskip
+% npts_out = length(nskip+1:5:npts)
 
 
 
+
+% k
+% starttime_segment
+% endtime_segment
 
                 % write sac files
-                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                nskip = save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, network, ...
+                                station, stla, stlo, stel, starttime_segment, outpath, nskip);
 
+
+
+% starttime_segment
+% time0 = starttime_segment;
+% starttime_segment = starttime;
+% starttime_segment.Second = starttime_segment.Second + (npts_part + nskip)*dt
+% 
+% nskip
+% npts_part
+% npts
+% 
+% time1 = time0;
+% time1.Second = time0.Second + (npts_out-1)*0.05
+% time2 = time0;
+% time2.Second = time0.Second + (371531-1)*dt
+% 
+% time4 = time1;
+% time4.Second = time4.Second + 0.05
+% % time0.Second + (npts_out-1)*0.05
+% % time0.Second + (371531-1)*dt
+% % (npts_out-1)*0.05
+% % (371531-1)*dt
+% 
+% % time3 = time0;
+% % time3.Second = time3.Second + 3.7153e+03
+% % starttime
+% wfz(npts_part+4)
+% k
+% % sacz(1)
+% % return
+% if (14631 == k)
+%     return
+% end
 
 
 
@@ -482,12 +625,17 @@ for k = 1:1:npackets
                 % starttime_segment = starttime;
                 % starttime_segment.Second = starttime_segment.Second + (npts_part - 1 + nskip + 1)*dt;
                 % starttime_segment.Second = starttime_segment.Second + (npts_part + nskip)*dt;
-
                 % midtime_segment = starttime_segment;
                 % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
                 % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
                 %                                                   0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+
+                %timestr = sprintf('%4.4d-%3.3dT%2.2d:%2.2d:%2.2d.%3.3d', starttime_segment.Year, dayofyear(starttime_segment)+1, 0, 0, 0, 0);
+                %endtime_segment = datetime(timestr, 'format', 'uuuu-DDD''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
+
+                %endtime_segment = starttime_segment + hours(1);
+                %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
 
                 % midtime_segment = starttime_segment;
                 % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
@@ -495,17 +643,29 @@ for k = 1:1:npackets
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
 
-                %endtime_segment = starttime_segment + hours(1);
-                %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
-
 
                 starttime_segment = starttime + seconds((npts_part + nskip)*dt);
-                %starttime_segment = starttime + seconds((npts_part - 1 + nskip + 1)*dt);
+                % starttime_segment = starttime + seconds((npts_part - 1 + nskip + 1)*dt);
                 endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
 
 
                 n = 50 - npts_part;
 
+% starttime_segment
+% endtime_segment
+% if (strcmp('1610560_.1172', filename(end-12:end)))
+%     dt
+%     endtime_segment
+%     starttime
+%     endtime
+%     etime(datevec(endtime_segment), datevec(starttime))/dt
+%     nearest(etime(datevec(endtime_segment), datevec(starttime))/dt)
+%     npts_part
+%     n
+% end
+% n
+% npts
+% npts_part
                 sacz(npts+1:npts+n) = wfz(npts_part+1:50);
                 sacn(npts+1:npts+n) = wfn(npts_part+1:50);
                 sace(npts+1:npts+n) = wfe(npts_part+1:50);
@@ -520,34 +680,36 @@ for k = 1:1:npackets
                 %                                            starttime  endtime
                 %
                 % write sac files
-                nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                                    starttime_segment, stla, stlo, stel, network, station, output_data_folder);
+                nskip = save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, network, ...
+                                station, stla, stlo, stel, starttime_segment, outpath, nskip);
 
 
                 npts = 0;
- 
+
                 % starttime_segment = starttime;
+
                 % starttime_segment.Second = starttime_segment.Second + (nskip + 1)*dt;
- 
                 % midtime_segment = starttime_segment;
                 % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
                 % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour, ...
                 %                                                   0, Seconds_segment, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+
+                %timestr = sprintf('%4.4d-%3.3dT%2.2d:%2.2d:%2.2d.%3.3d', starttime_segment.Year, dayofyear(starttime_segment)+1, 0, 0, 0, 0);
+                %endtime_segment = datetime(timestr, 'format', 'uuuu-DDD''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
-    
+                %endtime_segment = starttime_segment + hours(1);
+                %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
+
                 % midtime_segment = starttime_segment;
                 % midtime_segment.Second = midtime_segment.Second + Seconds_half_segment;
                 % endtime_segment = datetime(midtime_segment.Year, midtime_segment.Month, midtime_segment.Day, midtime_segment.Hour+1, ...
                 %                                                                   0, 0, 0, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
                 % endtime_segment.Second = endtime_segment.Second - dt;
-     
-                %endtime_segment = starttime_segment + hours(1);
-                %endtime_segment.Minute = 59; endtime_segment.Second = 60 - 0.5*dt;
 
 
                 starttime_segment = starttime + seconds((nskip+1)*dt);
                 endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
- 
+
 
                 % cat waveform into sac arrays
                 sacz(npts+1:npts+50) = wfz(1:50);
@@ -559,6 +721,13 @@ for k = 1:1:npackets
         end % end of if (endtime_segment >= endtime)
 
     end % end of if (is_continuous)
+
+
+% if (3502+7200*2 == k)
+% % if (3502 == k)
+%     k
+%     break
+% end
 
 
 end
@@ -574,39 +743,69 @@ fclose(fidin);
 
 
 
-function nskip = save_sacfile(sacz, sacn, sace, dt, npts, nskip, sampling_rate, downsampling_rate, b, a, ...
-                              starttime_segment, stla, stlo, stel, network, station, output_data_folder)
+function nskip = save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, network, ...
+                         station, stla, stlo, stel, starttime_segment, outpath, nskip)
 
 
 % preprocessing
 % downsampling
-[sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, ...
-                                                             dt, npts, nskip, downsampling_rate, b, a);
+[sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, dt, npts, ...
+                                                                      decimate_rate, b, a, nskip);
 % end of preprocessing
+
+
+% t1 = (0:1:npts-1)'*dt;
+% t2 = (0:1:npts_out-1)'*dt_out;
+% 
+% dt
+% dt_out
+% 
+% max(t1)
+% max(t2)
+% 
+% figure(4);
+% subplot(3,1,1);
+% hold off;
+% % plot(wf(:,1), 'r');
+% plot(t1, sacz(1:npts), 'r');
+% hold on;
+% plot(t2, sacz_out(1:npts_out), '--b');
+% hold off;
+% subplot(3,1,2);
+% hold off;
+% % plot(wf(:,2), 'r');
+% plot(t1, sacn(1:npts), 'r');
+% hold on;
+% plot(t2, sacn_out(1:npts_out), '--b');
+% hold off;
+% subplot(3,1,3);
+% hold off;
+% % plot(wf(:,3), 'r');
+% plot(t1, sace(1:npts), 'r');
+% hold on;
+% plot(t2, sace_out(1:npts_out), '--b');
+% hold off;
+% return
 
 
 % remove mean
 sacn_out = detrend(sacn_out, 'constant');
 sace_out = detrend(sace_out, 'constant');
 sacz_out = detrend(sacz_out, 'constant');
-% remove detrend
+% remove linear trend
 sacn_out = detrend(sacn_out, 'linear');
 sace_out = detrend(sace_out, 'linear');
 sacz_out = detrend(sacz_out, 'linear');
 
 
 %sacn_out = sacn_out - mean(sacn_out);
-%%if (npts_out > 6)
-%sacn_out = detrend(sacn_out);
-%%end
 %sace_out = sace_out - mean(sace_out);
-%%if (npts_out > 6)
-%sace_out = detrend(sace_out);
-%%end
 %sacz_out = sacz_out - mean(sacz_out);
-%%if (npts_out > 6)
-%sacz_out = detrend(sacz_out);
-%%end
+%if (npts_out > 6)
+%    sacn_out = detrend(sacn_out);
+%    sace_out = detrend(sace_out);
+%    sacz_out = detrend(sacz_out);
+%end
 
 
 Year = starttime_segment.Year;
@@ -615,7 +814,7 @@ Minute = starttime_segment.Minute;
 julday = day(starttime_segment, 'dayofyear');
 % create output path
 datestr = sprintf('%4.4d%3.3d', Year, julday);
-station_daily_path = [output_data_folder, '/', station, '/', datestr, '/'];
+station_daily_path = [outpath, '/', station, '/', datestr, '/'];
 if (~exist(station_daily_path, 'dir'))
     mkdir(station_daily_path);
 end
@@ -629,26 +828,27 @@ timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', Hour, Minute, nzsec, nzmsec);
 
 
 
+
 prefix = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..'];
 % output sac file
-%outfile = [prefix, 'BHN.SAC'];
 cmp = 'BHN';
+%outfile = [prefix, 'BHN.SAC'];
 SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
                            stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sacn_out;
 writesac(SAC);
 clear SAC;
 
-%outfile = [prefix, 'BHE.SAC'];
 cmp = 'BHE';
+%outfile = [prefix, 'BHE.SAC'];
 SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
-                           stla, stlo, stel, network, station, npts_out, dt_out, cmp);
+                            stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sace_out;
 writesac(SAC);
 clear SAC;
 
-%outfile = [prefix, 'BHZ.SAC'];
 cmp = 'BHZ';
+%outfile = [prefix, 'BHZ.SAC'];
 SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
                            stla, stlo, stel, network, station, npts_out, dt_out, cmp);
 SAC.DATA1 = sacz_out;
@@ -660,19 +860,19 @@ fprintf('%s is done ... \n', [datestr, '.', timestr, '.', network, '.', station,
 
 
 
-function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, sampling_rate, ...
-                                                                       dt, npts, nskip, downsampling_rate, b, a)
+
+function [sacz_out, sacn_out, sace_out, dt_out, npts_out, nskip] = downsampling(sacz, sacn, sace, dt, npts, ...
+                                                                                decimate_rate, b, a, nskip)
 
 
 sacz_segment = sacz(1:npts);
 sacn_segment = sacn(1:npts);
 sace_segment = sace(1:npts);
-decimate_rate = fix(sampling_rate/downsampling_rate);
-if ((1 ~= decimate_rate) && (npts > 6))
-    % downsampling
-    sacz_segment = filtfilt(b, a, sacz_segment);
-    sacn_segment = filtfilt(b, a, sacn_segment);
-    sace_segment = filtfilt(b, a, sace_segment);
+if ((1 ~= decimate_rate) && (npts > 12))
+	% downsampling
+	sacz_segment = filtfilt(b, a, sacz_segment);
+	sacn_segment = filtfilt(b, a, sacn_segment);
+	sace_segment = filtfilt(b, a, sace_segment);
 end
 indx = (nskip+1:decimate_rate:npts);
 sacz_out = sacz_segment(indx);
@@ -685,45 +885,58 @@ dt_out = decimate_rate*dt;
 clear indx sacz_segment sacn_segment sace_segment;
 
 
+% t1 = nskip*dt + (0:1:npts-1)'*dt;
+% t2 = nskip*dt + (0:1:npts_out-1)'*dt_out;
+% figure(2);
+% n = 501;
+% m = length((nskip+1:decimate_rate:n));
+% hold off;
+% % plot((nskip+1:n), sacz(nskip+1:n), 'r');
+% % hold on;
+% % plot((nskip+1:decimate_rate:n), sacz_out(1:m), '--b');
+% plot((nskip+1:npts), sacz(nskip+1:npts), 'r');
+% hold on;
+% plot((nskip+1:decimate_rate:npts), sacz_out(1:npts_out), '--b');
+% hold off;
+% 
+% 
+% dt
+% dt_out
+% npts
+% npts_out
+% decimate_rate
+% 
+% max(t1)
+% max(t2)
+% 
+% figure(1);
+% subplot(3,1,1);
+% hold off;
+% % plot(wf(:,1), 'r');
+% plot(t1, sacz(1:npts), 'r');
+% hold on;
+% plot(t2, sacz_out(1:npts_out), '--b');
+% hold off;
+% subplot(3,1,2);
+% hold off;
+% % plot(wf(:,2), 'r');
+% plot(t1, sacn(1:npts), 'r');
+% hold on;
+% plot(t2, sacn_out(1:npts_out), '--b');
+% hold off;
+% subplot(3,1,3);
+% hold off;
+% % plot(wf(:,3), 'r');
+% plot(t1, sace(1:npts), 'r');
+% hold on;
+% plot(t2, sace_out(1:npts_out), '--b');
+% hold off;
+% % return
+
+
+% nskip = decimate_rate - (npts - ((nskip+1) + (npts_out-1)*decimate_rate)) - 1;
 nskip = nskip + decimate_rate*npts_out - npts;
 
-
-
-function sta = read_stainfo(infile)
-
-fid = fopen(infile, 'r');
-    dat = [];
-    while(1)
-       line = fgetl(fid);
-       if (-1 == line)
-           break;
-       end
-       line = strtrim(line);
-       line = regexp(line, '[\t ]*', 'split');
-       %dat = [dat; [line{1}, line{2}, line{3}, line{4}]]
-       dat = [dat; line];
-   end
-fclose(fid);
-dat = dat';
-
-
-stafields = {'stnm'; 'stla'; 'stlo'; 'stel'};
-sta = cell(size(stafields,1), 1);
-sta(1,:) = {dat(1,:)};
-sta(2,:) = {dat(2,:)};
-sta(3,:) = {dat(3,:)};
-sta(4,:) = {dat(4,:)};
-sta = cell2struct(sta, stafields, 1);
-
-% dat = load(infile, '-ascii');
-% 
-% stafields = {'stnm'; 'stla'; 'stlo'; 'stel'};
-% sta = cell(size(stafields,1), 1);
-% sta(1,:) = {num2str(dat(:,1))};
-% sta(2,:) = {dat(:,2)};
-% sta(3,:) = {dat(:,3)};
-% sta(4,:) = {dat(:,4)};
-% sta = cell2struct(sta, stafields, 1);
 
 
 
@@ -775,6 +988,44 @@ elseif (('E' == CMP) || ('e' == CMP))     % E
     SAC.CMPINC = 90.0;
     SAC.KCMPNM = 'BHE';
 end
+
+
+
+function sta = read_stainfo(infile)
+
+fid = fopen(infile, 'r');
+    dat = [];
+    while(1)
+       line = fgetl(fid);
+       if (-1 == line)
+           break;
+       end
+       line = strtrim(line);
+       line = regexp(line, '[\t ]*', 'split');
+       %dat = [dat; [line{1}, line{2}, line{3}, line{4}]]
+       dat = [dat; line];
+   end
+fclose(fid);
+dat = dat';
+
+
+stafields = {'stnm'; 'stla'; 'stlo'; 'stel'};
+sta = cell(size(stafields,1), 1);
+sta(1,:) = {dat(1,:)};
+sta(2,:) = {dat(2,:)};
+sta(3,:) = {dat(3,:)};
+sta(4,:) = {dat(4,:)};
+sta = cell2struct(sta, stafields, 1);
+
+% dat = load(infile, '-ascii');
+% 
+% stafields = {'stnm'; 'stla'; 'stlo'; 'stel'};
+% sta = cell(size(stafields,1), 1);
+% sta(1,:) = {num2str(dat(:,1))};
+% sta(2,:) = {dat(:,2)};
+% sta(3,:) = {dat(:,3)};
+% sta(4,:) = {dat(:,4)};
+% sta = cell2struct(sta, stafields, 1);
 
 
 
