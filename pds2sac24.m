@@ -136,7 +136,9 @@ elseif(2 == filter_type)  % minimum phase filter
         filter_delay = 0.1125; % [0 - 160 Hz]
     end
     % correction is not applied
-    % it may be exp(-j*2*pi*f*tau(f))
+    % it may be exp(-1i*2*pi*f*tau(f)), where tau = max(linspace(0, fmax,
+    % nf), fmax), fmax is the corresponding cut-off frequency for minimum
+    % phase filter
 end
 
 
