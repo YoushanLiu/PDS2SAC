@@ -121,21 +121,22 @@ filter_type = packet(43);
 filter_delay = 0;
 if (1 == filter_type)     % linear phase filter
     if (0 == sps_type)
-        filter_delay = 0.230;
+        filter_delay = 0.2300;
     elseif(1 == sps_type)
-        filter_delay = 0.115;
+        filter_delay = 0.1150;
     elseif(2 == sps_type)
-        filter_delay = 0.058;
+        filter_delay = 0.0575;
     end
-	filter_delay = 0.5*filter_delay;
 elseif(2 == filter_type)  % minimum phase filter
     if (0 == sps_type)
-        filter_delay = 0.450;
+        filter_delay = 0.4500; % [0 - 40  Hz]
     elseif(1 == sps_type)
-        filter_delay = 0.225;
+        filter_delay = 0.2250; % [0 - 80  Hz]
     elseif(2 == sps_type)
-        filter_delay = 0.113;
+        filter_delay = 0.1125; % [0 - 160 Hz]
     end
+    % correction is not applied
+    % it may be exp(-j*2*pi*f*tau(f))
 end
 
 
@@ -319,8 +320,11 @@ for k = 1:1:npackets
 
 
     starttime_prev = starttime;
-    starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS') + seconds(filter_delay);
-    % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS') + seconds(filter_delay);
+    starttime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+    % endtime = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond + 1e3*(49*dt), 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
+    if (1 == filter_type)
+        starttime = starttime + seconds(filter_delay);
+    end
     % endtime = starttime;
     %endtime.Second = endtime.Second + 49*dt;
     endtime = starttime + seconds(Seconds_packet);
