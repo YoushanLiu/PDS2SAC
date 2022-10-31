@@ -127,6 +127,7 @@ if (1 == filter_type)     % linear phase filter
     elseif(2 == sps_type)
         filter_delay = 0.058;
     end
+	filter_delay = 0.5*filter_delay;
 elseif(2 == filter_type)  % minimum phase filter
     if (0 == sps_type)
         filter_delay = 0.450;
