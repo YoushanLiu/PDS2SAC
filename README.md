@@ -1,5 +1,3 @@
-![Visitor Count](https://profile-counter.glitch.me/{YoushanLiu}/count.svg)
-# 
 # PDS2SAC
 A matlab script to convert PDS2 file format to SAC file format.
 It conducts preprocesses, such as rmean, detrend, bandpass, and downsampling.
