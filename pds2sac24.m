@@ -461,7 +461,8 @@ for k = 1:1:npackets
     wfz(:) = (packet(7,:)*256 + packet(8,:))*256 + packet(9,:);
     indx = find(packet(7,:) >= 128);
     wfz(indx) = wfz(indx) - offset;
-    
+
+
     % minus is introduced by the south-positive
     wfn = -wfn*gain_inv;
     wfe = +wfe*gain_inv;
@@ -766,6 +767,10 @@ function nskip = save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, n
 % end of preprocessing
 
 
+if (npts_out <= 0)
+	return
+end
+
 % t1 = (0:1:npts-1)'*dt;
 % t2 = (0:1:npts_out-1)'*dt_out;
 % 
@@ -800,14 +805,16 @@ function nskip = save_sacfile(sacz, sacn, sace, dt, npts, decimate_rate, b, a, n
 % return
 
 
-% remove mean
-sacn_out = detrend(sacn_out, 'constant');
-sace_out = detrend(sace_out, 'constant');
-sacz_out = detrend(sacz_out, 'constant');
-% remove linear trend
-sacn_out = detrend(sacn_out, 'linear');
-sace_out = detrend(sace_out, 'linear');
-sacz_out = detrend(sacz_out, 'linear');
+if (npts_out >= 3)
+	% remove mean
+	sacn_out = detrend(sacn_out, 'constant');
+	sace_out = detrend(sace_out, 'constant');
+	sacz_out = detrend(sacz_out, 'constant');
+	% remove linear trend
+	sacn_out = detrend(sacn_out, 'linear');
+	sace_out = detrend(sace_out, 'linear');
+	sacz_out = detrend(sacz_out, 'linear');
+end
 
 
 %sacn_out = sacn_out - mean(sacn_out);
