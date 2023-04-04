@@ -839,7 +839,8 @@ if (~exist(station_daily_path, 'dir'))
 end
 
 
-sec = starttime_segment.Second;
+#sec = starttime_segment.Second;
+sec = round(starttime_segment.Second*1e3)*1.e-3;
 nzsec = fix(sec);
 nzmsec = fix((sec - nzsec)*1000);
 datestr = sprintf('%4.4d.%3.3d', Year, julday);
