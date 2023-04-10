@@ -88,7 +88,7 @@ end
 function readpds(filename, network, stainfo, downsampling_rate, Seconds_segment, outpath)
 
 
-fidin = fopen(filename, 'r', 'n');
+fidin = fopen(filename, 'rb', 'n');
 
 fseek(fidin, 0, 'eof');
 nbytes = ftell(fidin);
