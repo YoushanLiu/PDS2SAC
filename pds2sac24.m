@@ -300,25 +300,26 @@ for k = 1:1:npackets
     wfz = zeros(50,1);
 
     packet = fread(fidin, 500, 'uchar');
-    packet = reshape(packet, 10, 50);
+    packet = reshape(packet, 10, 50).';
     fseek(fidin, 12, 0);
 
 
+    info = packet(:,10);
     % datetime
-    Year = packet(10,1);
+    Year = info(1);
     if (Year < 70)
         Year = Year + 2000;
     else
         Year = Year + 1900;
     end
-    Month = packet(10,2);
-    Day = packet(10,3);
-    Hour = packet(10,4);
+    Month = info(2);
+    Day = info(3);
+    Hour = info(4);
     % convert to UTC time
     Hour = Hour - 8;
-    Minute = packet(10,5);
-    Second = packet(10,6);
-    MicroSecond = packet(10,7)*10 + packet(10,8);
+    Minute = info(5);
+    Second = info(6);
+    MicroSecond = info(7)*10 + info(8);
 
 
     starttime_prev = starttime;
@@ -335,7 +336,7 @@ for k = 1:1:npackets
 
     % if the number of GPS in current packet is less than the nGPS_min
     % (i.e. 4), I consider this packet is GPS unlocked. Then I discard it.
-    if (packet(10,33) < nGPS_min)
+    if (info(33) < nGPS_min)
         if (npts > 0)
             % write into a new file because of discontinuous clock
             % write sac file
@@ -393,29 +394,29 @@ for k = 1:1:npackets
 
     % get eatra header information
     % latitude
-    % stla_key = char(packet(10,9));
-    % stla = (str2double(char(packet(10,10)))*10 + str2double(char(packet(10,11)))) + ...
-    %       ((str2double(char(packet(10,12)))*10 + str2double(char(packet(10,13)))) + ...
-    %        1.e-4*(str2double(char(packet(10,14)))*1e3 + str2double(char(packet(10,15)))*1e2 + ...
-    %        str2double(char(packet(10,16)))*1e1 + str2double(char(packet(10,17))))) / 60.0;
+    % stla_key = char(info(9));
+    % stla = (str2double(char(info(10)))*10 + str2double(char(info(11)))) + ...
+    %       ((str2double(char(info(12)))*10 + str2double(char(info(13)))) + ...
+    %        1.e-4*(str2double(char(info(14)))*1e3 + str2double(char(info(15)))*1e2 + ...
+    %        str2double(char(info(16)))*1e1 + str2double(char(info(17))))) / 60.0;
     % if (('S' == stla_key) || ('s' == stla_key))
     %     stla = -stla;
     % end
     % stahead(k).stla = stla;
 
     % longitude
-    % stlo_key = char(packet(10,18));
-    % stlo = (str2double(char(packet(10,19)))*100 + str2double(char(packet(10,20)))*10 + str2double(char(packet(10,21)))) + ...
-    %       ((str2double(char(packet(10,22)))*10 + str2double(char(packet(10,23)))) + ...
-    %        1.e-4*(str2double(char(packet(10,24)))*1e3 + str2double(char(packet(10,25)))*1e2 + ...
-    %        str2double(char(packet(10,26)))*1e1 + str2double(char(packet(10,27))))) / 60.0;
+    % stlo_key = char(info(18));
+    % stlo = (str2double(char(info(19)))*100 + str2double(char(info(20)))*10 + str2double(char(info(21)))) + ...
+    %       ((str2double(char(info(22)))*10 + str2double(char(info(23)))) + ...
+    %        1.e-4*(str2double(char(info(24)))*1e3 + str2double(char(info(25)))*1e2 + ...
+    %        str2double(char(info(26)))*1e1 + str2double(char(info(27))))) / 60.0;
     % if (('W' == stlo_key) || ('w' == stlo_key))
     %    stlo = -stlo;
     % end
     % stahead(k).stlo = stlo;
 
     % elevtion
-    % stel = str2double(strcat([packet(10,28), packet(10,29), packet(10,30), packet(10,31), packet(10,32)]));
+    % stel = str2double(strcat(info(28:32)));
     % stahead(k).stel = stel;
 % stla
 % stlo
@@ -432,34 +433,34 @@ for k = 1:1:npackets
 
     % GPS
     % number of GPS
-    % stahead(k).num_gps = packet(10,33);
+    % stahead(k).num_gps = info(33);
     % GPS status
-    % stahead(k).gps_status = packet(10,34);
+    % stahead(k).gps_status = info(34);
     % number of GPS locked
-    % stahead(k).gps_lock_num = packet(10,35);
+    % stahead(k).gps_lock_num = info(35);
     % time of last locked GPS
-    % Day = packet(10,39);
-    % Hour = packet(10,40);
+    % Day = info(39);
+    % Hour = info(40);
     % convert to UTC time
     % Hour = Hour - 8;
-    % Minute = packet(10,41);
-    % Second = packet(10,42);
-    % MicroSecond = packet(10,43)*10 + packet(10,44);
+    % Minute = info(41);
+    % Second = info(42);
+    % MicroSecond = info(43)*10 + info(44);
     % stahead(k).gps_lock_time = datetime(Year, Month, Day, Hour, Minute, Second, MicroSecond, 'Format', 'uuuu-MM-dd''T''HH:mm:ss.SSS');
 
 
 
     % convert data
-    wfn(:) = (packet(1,:)*256 + packet(2,:))*256 + packet(3,:);
-    indx = find(packet(1,:) >= 128);
+    wfn(:) = (packet(:,1)*256 + packet(:,2))*256 + packet(:,3);
+    indx = find(packet(:,1) >= 128);
     wfn(indx) = wfn(indx) - offset;
 
-    wfe(:) = (packet(4,:)*256 + packet(5,:))*256 + packet(6,:);
-    indx = find(packet(4,:) >= 128);
+    wfe(:) = (packet(:,4)*256 + packet(:,5))*256 + packet(:,6);
+    indx = find(packet(:,4) >= 128);
     wfe(indx) = wfe(indx) - offset;
 
-    wfz(:) = (packet(7,:)*256 + packet(8,:))*256 + packet(9,:);
-    indx = find(packet(7,:) >= 128);
+    wfz(:) = (packet(:,7)*256 + packet(:,8))*256 + packet(:,9);
+    indx = find(packet(:,7) >= 128);
     wfz(indx) = wfz(indx) - offset;
 
 
@@ -747,7 +748,7 @@ end
 
 
 clear b a;
-clear packet;
+clear packet info;
 clear wfn wfe wfz;
 clear sacn sace sacz;
 
