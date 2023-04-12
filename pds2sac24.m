@@ -357,7 +357,7 @@ for k = 1:1:npackets
     if (k > 1)
         % if (abs(etime(datevec(starttime), datevec(starttime_prev))) > 50.00001*dt)
         %if (round(etime(datevec(starttime), datevec(starttime_prev))/dt) ~= 50)
-        if (round((starttime - starttime_prev)/dt) ~= 50)
+        if (round(seconds(starttime - starttime_prev)/dt) ~= 50)
             is_continuous = false;
         end
     end
