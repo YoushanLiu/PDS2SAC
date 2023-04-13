@@ -97,7 +97,7 @@ npackets = ceil(nbytes/512) - 3;
 frewind(fidin);
 
 % read control block
-packet = fread(fidin, 512, 'uchar');
+packet = fread(fidin, 512, 'uint8');
 
 
 % get header terms
@@ -301,7 +301,7 @@ for k = 1:1:npackets
     wfe = zeros(50,1);
     wfz = zeros(50,1);
 
-    packet = fread(fidin, 500, 'uchar');
+    packet = fread(fidin, 500, 'uint8');
     packet = reshape(packet, 10, 50).';
     fseek(fidin, 12, 0);
 
