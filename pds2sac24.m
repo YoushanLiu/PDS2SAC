@@ -848,7 +848,9 @@ end
 %nzmsec = fix((sec - nzsec)*1000);
 sec = round(starttime_segment.Second*1.e3);
 nzsec = fix(sec*0.001);
-nzmsec = fix(sec - nzsec);
+nzmsec = fix(sec - nzsec*1000);
+%nzmsec = mod(sec, 1000);
+%nzsec = fix((sec - nzmsec)*0.001);
 datestr = sprintf('%4.4d.%3.3d', Year, julday);
 timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', Hour, Minute, nzsec, nzmsec);
 
