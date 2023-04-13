@@ -306,22 +306,22 @@ for k = 1:1:npackets
     fseek(fidin, 12, 0);
 
 
-    info = packet(:,10);
+    hdr = packet(:,10);
     % datetime
-    Year = info(1);
+    Year = hdr(1);
     if (Year < 70)
         Year = Year + 2000;
     else
         Year = Year + 1900;
     end
-    Month = info(2);
-    Day = info(3);
-    Hour = info(4);
+    Month = hdr(2);
+    Day = hdr(3);
+    Hour = hdr(4);
     % convert to UTC time
     Hour = Hour - 8;
-    Minute = info(5);
-    Second = info(6);
-    MicroSecond = info(7)*10 + info(8);
+    Minute = hdr(5);
+    Second = hdr(6);
+    MicroSecond = hdr(7)*10 + hdr(8);
 
 
     starttime_prev = starttime;
@@ -398,10 +398,10 @@ for k = 1:1:npackets
     % get eatra header information
     % latitude
     % stla_key = char(info(9));
-    % stla = (str2double(char(info(10)))*10 + str2double(char(info(11)))) + ...
-    %       ((str2double(char(info(12)))*10 + str2double(char(info(13)))) + ...
-    %        1.e-4*(str2double(char(info(14)))*1e3 + str2double(char(info(15)))*1e2 + ...
-    %        str2double(char(info(16)))*1e1 + str2double(char(info(17))))) / 60.0;
+    % stla = (str2double(char(hdr(10)))*10 + str2double(char(hdr(11)))) + ...
+    %       ((str2double(char(hdr(12)))*10 + str2double(char(hdr(13)))) + ...
+    %        1.e-4*(str2double(char(hdr(14)))*1e3 + str2double(char(hdr(15)))*1e2 + ...
+    %        str2double(char(hdr(16)))*1e1 + str2double(char(hdr(17))))) / 60.0;
     % if (('S' == stla_key) || ('s' == stla_key))
     %     stla = -stla;
     % end
@@ -409,17 +409,17 @@ for k = 1:1:npackets
 
     % longitude
     % stlo_key = char(info(18));
-    % stlo = (str2double(char(info(19)))*100 + str2double(char(info(20)))*10 + str2double(char(info(21)))) + ...
-    %       ((str2double(char(info(22)))*10 + str2double(char(info(23)))) + ...
-    %        1.e-4*(str2double(char(info(24)))*1e3 + str2double(char(info(25)))*1e2 + ...
-    %        str2double(char(info(26)))*1e1 + str2double(char(info(27))))) / 60.0;
+    % stlo = (str2double(char(hdr(19)))*100 + str2double(char(hdr(20)))*10 + str2double(char(hdr(21)))) + ...
+    %       ((str2double(char(hdr(22)))*10 + str2double(char(hdr(23)))) + ...
+    %        1.e-4*(str2double(char(hdr(24)))*1e3 + str2double(char(hdr(25)))*1e2 + ...
+    %        str2double(char(hdr(26)))*1e1 + str2double(char(hdr(27))))) / 60.0;
     % if (('W' == stlo_key) || ('w' == stlo_key))
     %    stlo = -stlo;
     % end
     % stahead(k).stlo = stlo;
 
     % elevtion
-    % stel = str2double(strcat(info(28:32)));
+    % stel = str2double(strcat(hdr(28:32)));
     % stahead(k).stel = stel;
 % stla
 % stlo
@@ -751,7 +751,7 @@ end
 
 
 clear b a;
-clear packet info;
+clear packet hdr;
 clear wfn wfe wfz;
 clear sacn sace sacz;
 
