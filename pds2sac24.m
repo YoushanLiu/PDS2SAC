@@ -843,10 +843,12 @@ if (~exist(station_daily_path, 'dir'))
 end
 
 
-#sec = starttime_segment.Second;
-sec = round(starttime_segment.Second*1e3)*1.e-3;
-nzsec = fix(sec);
-nzmsec = fix((sec - nzsec)*1000);
+%sec = starttime_segment.Second;
+%nzsec = fix(sec);
+%nzmsec = fix((sec - nzsec)*1000);
+sec = round(starttime_segment.Second*1.e3);
+nzsec = fix(sec*0.001);
+nzmsec = fix(sec - nzsec);
 datestr = sprintf('%4.4d.%3.3d', Year, julday);
 timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', Hour, Minute, nzsec, nzmsec);
 
