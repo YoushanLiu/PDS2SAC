@@ -560,7 +560,8 @@ for k = 1:1:npackets
             %                                       starttime  endtime
             %
             % extract waveform into sac arrays
-            time_diff = etime(datevec(endtime_segment), datevec(starttime));
+            %time_diff = etime(datevec(endtime_segment), datevec(starttime));
+            time_diff = seconds(endtime_segment - starttime);
 
             %if (time_diff > 0.5*dt)
             if (time_diff >= 0.0)
