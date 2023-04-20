@@ -50,7 +50,7 @@ for istage = 1:1:nstage_folders_list
     station_folders_list = dir([station_path, '5*']);
     nstation_folders_list = length(station_folders_list);
 
-    parfor istation = 1:1:nstation_folders_list
+    parfor istation = 1:nstation_folders_list
 %     for istation = 1:1:6
 
 %         istation
