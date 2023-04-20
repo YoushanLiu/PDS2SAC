@@ -338,7 +338,7 @@ for k = 1:1:npackets
 
     % if the number of GPS in current packet is less than the nGPS_min
     % (i.e. 4), I consider this packet is GPS unlocked. Then I discard it.
-    if (info(33) < nGPS_min)
+    if (hdr(33) < nGPS_min)
         if (npts > 0)
             % write into a new file because of discontinuous clock
             % write sac file
