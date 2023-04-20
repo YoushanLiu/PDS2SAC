@@ -1,6 +1,6 @@
 function pds2sac24
 
-% pad2sac24 - convert files in 24-bit PDS format into SAC format and can cut data into segments
+% pas2sac24 - convert files in 24-bit PDS format into SAC format and can cut data into segments
 % Author: Youshan Liu
 % Affiliation: Institute of Geology and Geophysics, Chinese Academy of Sciences
 %
