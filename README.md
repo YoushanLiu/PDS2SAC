@@ -2,6 +2,8 @@
 ![Version](https://img.shields.io/github/v/release/YoushanLiu/PDS2SAC)
 ![Commits](https://img.shields.io/github/commit-activity/m/YoushanLiu/PDS2SAC)
 ![License](https://img.shields.io/github/license/YoushanLiu/PDS2SAC)
+![Size](https://img.shields.io/github/languages/code-size/YoushanLiu/PDS2SAC)
+![RepoSize](https://img.shields.io/github/repo-size/YoushanLiu/PDS2SAC)
 # PDS2SAC
 A matlab script to convert PDS2 file format to SAC file format.
 It conducts preprocesses, such as rmean, detrend, bandpass, and downsampling.
