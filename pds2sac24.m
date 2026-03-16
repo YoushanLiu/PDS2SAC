@@ -115,7 +115,6 @@ packet = fread(fidin, 512, 'uint8');
 station = strcat(packet(40:-1:37).'); % This indicates big_endian
 sps_type = packet(47);
 sampling_rate = 100*2^sps_type;
-decimate_rate = fix(sampling_rate/downsampling_rate);
 dt = 1.0 / sampling_rate;
 gain_inv = 1.0 / (2^packet(45));
 filter_type = packet(43);
@@ -142,6 +141,51 @@ elseif(2 == filter_type)  % minimum phase filter
     % fmax and nf are the corresponding cutoff frequency and number of frequency points
     % for minimum phase filter
 end
+
+
+
+
+if (strcmp(filename, './ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/2017403/2714492_.1131'))
+    station = '2127';
+end
+% if (strcmp(filename, './JD2/JD2/2017403/2714492_.1131'))
+%     station = '2127';
+% end
+if (strcmp(filename, './ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/2017.4.05/2908084_.0586'))
+    station = '3161';
+end
+% if (strcmp(filename, './JD3/JD3/2017.4.05/2908084_.0586'))
+%     station = '3161';
+% end
+% ç¬¬äºŒï¿?2017403/2714492_.1131
+if (~isempty(findstr(filename, '2714492_.1131')))
+    station = '2127';
+    fprintf('Error: head keyword station is wrongle set in filename %s\n', filename);
+end
+% ç¬¬ä¸‰ï¿?2017.4.05/2908084_.0586
+if (~isempty(findstr(filename, '2908084_.0586')))
+    station = '3161';
+    fprintf('Error: head keyword station is wrongle set in filename %s\n', filename);
+end
+
+% station
+if (strcmp('4339', station))
+    station = '4239';
+    fprintf('Error: station is wrongle set in filename %s\n', filename);
+end
+if (strcmp('0802', station))
+    station = '4266';
+    fprintf('Error: station is wrongle set in filename %s\n', filename);
+end
+
+
+filter_delay = (47-1)/(2/dt);
+
+filter_delay
+
+
+
+
 
 
 
@@ -210,6 +254,12 @@ half_dt = 0.5*dt;
 Seconds_packet = 49*dt;
 % Seconds_half_segment = 0.5*Seconds_segment;
 npts_segment = nearest(Seconds_segment/dt);
+decimate_rate = fix(sampling_rate/downsampling_rate);
+if (abs(sampling_rate - decimate_rate*downsampling_rate) > 1.e-3)
+	fprintf('Error: decimating sampling rate from %f to %f, which leads to non-integer decimate rate!', sampling_rate, downsampling_rate);
+	return
+end
+
 
 
 [b, a] = butter(2, 2*dt*0.499*downsampling_rate, 'low');
@@ -224,41 +274,6 @@ sacz = zeros(npts_segment, 1);
 starttime = datetime();
 
 
-
-
-
-if (strcmp(filename, './ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/2017403/2714492_.1131'))
-    station = '2127';
-end
-% if (strcmp(filename, './JD2/JD2/2017403/2714492_.1131'))
-%     station = '2127';
-% end
-if (strcmp(filename, './ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/2017.4.05/2908084_.0586'))
-    station = '3161';
-end
-% if (strcmp(filename, './JD3/JD3/2017.4.05/2908084_.0586'))
-%     station = '3161';
-% end
-% ç¬¬äºŒï¿?2017403/2714492_.1131
-if (~isempty(findstr(filename, '2714492_.1131')))
-    station = '2127';
-    fprintf('Error: head keyword station is wrongle set in filename %s\n', filename);
-end
-% ç¬¬ä¸‰ï¿?2017.4.05/2908084_.0586
-if (~isempty(findstr(filename, '2908084_.0586')))
-    station = '3161';
-    fprintf('Error: head keyword station is wrongle set in filename %s\n', filename);
-end
-
-% station
-if (strcmp('4339', station))
-    station = '4239';
-    fprintf('Error: station is wrongle set in filename %s\n', filename);
-end
-if (strcmp('0802', station))
-    station = '4266';
-    fprintf('Error: station is wrongle set in filename %s\n', filename);
-end
 
 
 path_splitted = regexp(filename, '[\\\/]', 'split');
