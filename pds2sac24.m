@@ -875,7 +875,7 @@ timestr = sprintf('%2.2d.%2.2d.%2.2d.%3.3d', Hour, Minute, nzsec, nzmsec);
 
 prefix = [station_daily_path, datestr, '.', timestr, '.', network, '.', station, '..'];
 % output sac file
-cmp = 'BHN';
+cmp = 'EHN';
 %outfile = [prefix, 'BHN.SAC'];
 SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
                            stla, stlo, stel, network, station, npts_out, dt_out, cmp);
@@ -883,7 +883,7 @@ SAC.DATA1 = sacn_out;
 writesac(SAC);
 clear SAC;
 
-cmp = 'BHE';
+cmp = 'EHE';
 %outfile = [prefix, 'BHE.SAC'];
 SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
                             stla, stlo, stel, network, station, npts_out, dt_out, cmp);
@@ -891,7 +891,7 @@ SAC.DATA1 = sace_out;
 writesac(SAC);
 clear SAC;
 
-cmp = 'BHZ';
+cmp = 'EHZ';
 %outfile = [prefix, 'BHZ.SAC'];
 SAC = initi_sacheader([prefix, cmp, '.SAC'], starttime_segment, julday, nzsec, nzmsec, ...
                            stla, stlo, stel, network, station, npts_out, dt_out, cmp);
@@ -1022,16 +1022,14 @@ CMP = cmp(end:end);
 if (('Z' == CMP) || ('z' == CMP))         % Z
     SAC.CMPAZ  = 0.0;
     SAC.CMPINC = 0.0;
-    SAC.KCMPNM = 'BHZ';
 elseif (('N' == CMP) || ('n' == CMP))     % N
     SAC.CMPAZ  = 0.0;
     SAC.CMPINC = 90.0;
-    SAC.KCMPNM = 'BHN';
 elseif (('E' == CMP) || ('e' == CMP))     % E
     SAC.CMPAZ  = 90.0;
     SAC.CMPINC = 90.0;
-    SAC.KCMPNM = 'BHE';
 end
+SAC.KCMPNM = cmp;
 
 
 
