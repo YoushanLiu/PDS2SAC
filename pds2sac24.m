@@ -27,10 +27,6 @@ inpath = './JD.Group4.Raw';
 outpath = './SAC.Group4';
 inpath = './JD.Group5.PDS.Raw';
 outpath = './SAC.Group5.PDS';
-% inpath = './ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
-% outpath = './Group2';
-% inpath = './JD2';
-% outpath = './Group2';
 
 
 if (~exist(outpath, 'dir'))
@@ -51,9 +47,7 @@ for istage = 1:1:nstage_folders_list
     nstation_folders_list = length(station_folders_list);
 
     parfor istation = 1:nstation_folders_list
-%     for istation = 1:1:6
 
-%         istation
         daily_path = [station_path, station_folders_list(istation).name, '/'];
 
         daily_files_list = dir([daily_path, '*_*']);
@@ -62,15 +56,6 @@ for istage = 1:1:nstage_folders_list
         for ifile = 1:nfiles
 
             filename = [daily_path, daily_files_list(ifile).name];
-%             filename = './èƒ¶ä¸œï¿?ï¿½ï¿½/å±±ä¸œï¿?ï¿½ï¿½æ•°æ®/2017.3.24/1714251_.1140'
-
-% filename = './ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?2017.03.22/1710100_.1268';
-% filename = './èƒ¶ä¸œï¿?ï¿½ï¿½/å±±ä¸œï¿?ï¿½ï¿½æ•°æ®/2017.3.27/2009195_.1051'
-%2017.03.22/1709452_.1266
-%2017.03.22/1709562_.1265
-% filename = './èƒ¶ä¸œå››ç»„/èƒ¶ä¸œå››ç»„æ•°æ®/2017.03.22/1710100_.1268'
-% filename = './èƒ¶ä¸œå››ç»„/èƒ¶ä¸œå››ç»„æ•°æ®/2017.03.22/1709562_.1265'
-% filename = './èƒ¶ä¸œå››ç»„/èƒ¶ä¸œå››ç»„æ•°æ®/2017.03.25/1810105_.1145'
 
             fprintf('\n\nConverting %s ...\n', filename);
             readpds(filename, network, stainfo, downsampling_rate, Seconds_segment, outpath);
