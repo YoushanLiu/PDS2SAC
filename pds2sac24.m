@@ -725,7 +725,8 @@ for k = 1:1:npackets
                 % endtime_segment.Second = endtime_segment.Second - dt;
 
 
-                starttime_segment = starttime + seconds((nskip+1)*dt);
+                starttime_segment = starttime + seconds(nskip*dt);
+                %starttime_segment = starttime + seconds((nskip+1 - 1)*dt);
                 endtime_segment = starttime_segment + seconds(Seconds_segment - half_dt);
 
 
